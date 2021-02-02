@@ -1,0 +1,39 @@
+syntax = "proto3";
+ 
+option go_package = "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api";
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.routeguide";
+option java_outer_classname = "RouteGuideProto";
+
+package yt_fetcher.api;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+service YoutubeFetcher{
+  rpc GetVideos(Channel) returns (Videos){}
+  rpc GetVideo(Video) returns (Video){}
+}
+
+message ErrorStatus {
+  string message = 1;
+  repeated google.protobuf.Any details = 2;
+}
+
+message Channel{
+  string url = 1;
+  string name = 2;
+}
+
+message Video{
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string author = 4;
+  google.protobuf.Timestamp last_updated = 5;
+}
+
+message Videos{
+  Channel chan = 1;
+  repeated Video videos = 2;
+}
