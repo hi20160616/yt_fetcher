@@ -21,12 +21,17 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	r, err := c.GetVideos(ctx, &pb.Channel{Url: "https://www.youtube.com/channel/UCCtTgzGzQSWVzCG0xR7U-MQ/videos", Name: "亮生活 / Bright Side"})
-	if err != nil {
-		log.Fatalf("could not get videos: %v", err)
-	}
-	fmt.Println(r.Chan)
-	for _, e := range r.Videos {
-		fmt.Println(e.Title)
-	}
+	// get video
+	v, err := c.GetVideo(ctx, &pb.Video{Id: "nyfAij5B9fM"})
+	fmt.Println(v.Title)
+
+	// get videos
+	// r, err := c.GetVideos(ctx, &pb.Channel{Url: "https://www.youtube.com/channel/UCCtTgzGzQSWVzCG0xR7U-MQ/videos", Name: "亮生活 / Bright Side"})
+	// if err != nil {
+	//         log.Fatalf("could not get videos: %v", err)
+	// }
+	// fmt.Println(r.Chan)
+	// for _, e := range r.Videos {
+	//         fmt.Println(e.Title)
+	// }
 }

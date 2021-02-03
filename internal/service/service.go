@@ -4,8 +4,10 @@ import (
 	"context"
 	"log"
 	"net"
+	"net/url"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
+	"github.com/hi20160616/yt_fetcher/internal/biz"
 	"google.golang.org/grpc"
 )
 
@@ -13,6 +15,7 @@ type Server struct {
 	pb.UnimplementedYoutubeFetcherServer
 	*grpc.Server
 	address string
+	fc      *biz.FetcherCase
 }
 
 type Options struct {
@@ -21,6 +24,10 @@ type Options struct {
 
 func NewServer(opts Options) *Server {
 	return &Server{Server: grpc.NewServer(), address: opts.Address}
+}
+
+func NewFetcherServer(fc *biz.FetcherCase) pb.YoutubeFetcherServer {
+	return &Server{fc: fc}
 }
 
 func (s *Server) Start(ctx context.Context) error {
@@ -38,23 +45,38 @@ func (s *Server) Stop(ctx context.Context) error {
 	return nil
 }
 
-// TODO: test serve and client, implement methods for fetch video
 func (s *Server) GetVideo(ctx context.Context, in *pb.Video) (*pb.Video, error) {
 	log.Println("Get info from Video and set it to Video")
-	in.Title = "Title get from url"
-	in.Id = "url from `in` pre-set"
-	in.Description = "get and set after fetch from url"
-	in.Author = "this is channel name that pre-set"
-	in.LastUpdated = in.GetLastUpdated() // "this timestamp is get from video url pre-setted"
-	return &pb.Video{
-		Title:       in.Title,
-		LastUpdated: in.LastUpdated,
-	}, nil
+	// in.Title = "Title get from url"
+	// in.Id = "url from `in` pre-set"
+	// in.Description = "get and set after fetch from url"
+	// in.Author = "this is channel name that pre-set"
+	// in.LastUpdated = in.GetLastUpdated() // "this timestamp is get from video url pre-setted"
+	// return &pb.Video{
+	//         Title:       in.Title,
+	//         LastUpdated: in.LastUpdated,
+	// }, nil
+	v, err := s.fc.GetVideo(in)
+	if err != nil {
+		return nil, err
+	}
+	return v, nil
 }
 
-// TODO: implement methods for fetch videos
 func (s *Server) GetVideos(ctx context.Context, in *pb.Channel) (*pb.Videos, error) {
 	log.Println("Get videos")
 	log.Println("fetch video links from channel")
-	return &pb.Videos{Chan: &pb.Channel{Url: in.Url, Name: in.Name}}, nil
+	// dto -> do
+	u, err := url.Parse(in.Url)
+	if err != nil {
+		return nil, err
+	}
+	f := &biz.Fetcher{Entrance: u}
+
+	// call biz
+	videos, err := s.fc.GetVideos(f)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.Videos{Videos: videos}, nil
 }

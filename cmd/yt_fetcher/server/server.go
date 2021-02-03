@@ -9,14 +9,26 @@ import (
 	"syscall"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
+	"github.com/hi20160616/yt_fetcher/internal/biz"
+	"github.com/hi20160616/yt_fetcher/internal/data"
 	"github.com/hi20160616/yt_fetcher/internal/service"
 	"golang.org/x/sync/errgroup"
 )
 
+func InitFetcherCase() *biz.FetcherCase {
+	fetcherRepo := data.NewFetcherRepo()
+	fetcherCase := biz.NewFetcherCase(fetcherRepo)
+	return fetcherCase
+}
+
 func main() {
 	opts := service.Options{Address: ":10000"}
+
+	fc := InitFetcherCase()
+	fservice := service.NewFetcherServer(fc)
+
 	s := service.NewServer(opts)
-	pb.RegisterYoutubeFetcherServer(s, &service.Server{})
+	pb.RegisterYoutubeFetcherServer(s, fservice)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	g, ctx := errgroup.WithContext(ctx)
