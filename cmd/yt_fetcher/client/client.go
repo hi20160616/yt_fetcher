@@ -23,7 +23,7 @@ func main() {
 
 	// get video
 	v, err := c.GetVideo(ctx, &pb.Video{Id: "nyfAij5B9fM"})
-	fmt.Println(v.Title)
+	fmt.Println(v)
 
 	// get videos
 	// r, err := c.GetVideos(ctx, &pb.Channel{Url: "https://www.youtube.com/channel/UCCtTgzGzQSWVzCG0xR7U-MQ/videos", Name: "亮生活 / Bright Side"})

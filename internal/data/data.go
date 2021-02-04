@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/hi20160616/exhtml"
@@ -57,14 +58,15 @@ func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 		return nil, err
 	}
 	t := video.Formats.FindByQuality("medium").LastModified
-	tt, err := time.Parse(time.RFC3339, t)
+	tt, err := strconv.ParseInt(t[:10], 10, 64)
 	if err != nil {
 		return nil, err
 	}
+	ttt := time.Unix(tt, 0)
 	v.Title = video.Title
 	v.Description = video.Description
 	v.Author = video.Author
-	v.LastUpdated = timestamppb.New(tt)
+	v.LastUpdated = timestamppb.New(ttt)
 	return v, nil
 }
 

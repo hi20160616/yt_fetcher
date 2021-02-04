@@ -2,12 +2,14 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"net/url"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 	"github.com/hi20160616/yt_fetcher/internal/biz"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
 
@@ -58,8 +60,10 @@ func (s *Server) GetVideo(ctx context.Context, in *pb.Video) (*pb.Video, error) 
 	// }, nil
 	v, err := s.fc.GetVideo(in)
 	if err != nil {
-		return nil, err
+		fmt.Printf("%+v", err)
+		return nil, errors.WithMessagef(err, "service.Server.GetVideo err")
 	}
+	fmt.Println(v.Title)
 	return v, nil
 }
 
