@@ -3,17 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
+	"github.com/hi20160616/yt_fetcher/internal/pkg/log"
 	"google.golang.org/grpc"
 )
 
 func main() {
 	conn, err := grpc.Dial("localhost:10000", grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		// log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
 	c := pb.NewYoutubeFetcherClient(conn)
@@ -24,7 +24,7 @@ func main() {
 	// get video: pass test
 	v, err := c.GetVideo(ctx, &pb.Video{Id: "nyfAij5B9fM"})
 	if err != nil {
-		log.Printf("c.GetVideo err: %+v", err)
+		// log.Printf("c.GetVideo err: %+v", err)
 	}
 	fmt.Println(v)
 
@@ -45,4 +45,10 @@ func main() {
 	// for _, e := range r.Videos {
 	//         fmt.Println(e.Title)
 	// }
+
+	// test record errors by log.
+	fmt.Println("basic logging and modification of logger:")
+	log.Log()
+	fmt.Println("logging 'handled' errors:")
+	log.FinalDestination()
 }

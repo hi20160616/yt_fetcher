@@ -1,11 +1,20 @@
 # Youtube Fetcher
 
+
+# gRPC
+```
+protoc --go_out=. --go_opt=paths=source_relative \
+    --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+api/yt_fetcher/api/server.proto
+```
+
 # Refer
 
 https://hkgoldenmra.blogspot.com/2013/05/youtube.html
 
-要获取 http://www.youtube.com/watch?v=`fEcnrA6RIzo` 的信息
-将 v 的参數加插至 http://www.youtube.com/get_video_info?video_id=`fEcnrA6RIzo`
+要获取 http://www.youtube.com/watch?v=fEcnrA6RIzo 的信息:
+
+访问: http://www.youtube.com/get_video_info?video_id=fEcnrA6RIzo
 
 然后通过 URL decode online 网站得到具体信息：
 
