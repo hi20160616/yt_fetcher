@@ -45,24 +45,25 @@ func (s *Server) Stop(ctx context.Context) error {
 	return nil
 }
 
-// Get info from Video and set it to Video
+// GetVideo implements api.GetVideo, it get video's info and set it back to `in`
 func (s *Server) GetVideo(ctx context.Context, in *pb.Video) (*pb.Video, error) {
 	log.Println("Get one video")
-	v, err := s.fc.GetVideo(in)
+	in, err := s.fc.GetVideo(in)
 	if err != nil {
 		log.Printf("GetVideo err: %+v", err)
 		return nil, errors.WithMessage(err, "service.Server.GetVideo err")
 	}
-	return v, nil
+	return in, nil
 }
 
+// GetVideoIds implements api.GetVideoIds, it get videoIds by `in.Url` and set it back to `in`
 func (s *Server) GetVideoIds(ctx context.Context, in *pb.Channel) (*pb.Channel, error) {
 	log.Println("Get video ids")
 	s.fc.GetVideoIds(in)
 	return in, nil
 }
 
-// Get videos' info
+// GetVideos implements api.GetVideos, it get videos by `in.VideoIds` and set it back to `in`
 func (s *Server) GetVideos(ctx context.Context, in *pb.Channel) (*pb.Videos, error) {
 	log.Println("Get videos")
 	// call biz

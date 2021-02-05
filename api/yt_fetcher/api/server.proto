@@ -9,14 +9,18 @@ package yt_fetcher.api;
 
 import "google/protobuf/timestamp.proto";
 
+// Youtube fetch service, no need youtube api key.
 service YoutubeFetcher{
+  // Get videoIds from a youtube video list page
   rpc GetVideoIds(Channel) returns (Channel) {}
+  // Get videos info by page url set in channel
   rpc GetVideos(Channel) returns (Videos){}
+  // Get video info by videoId
   rpc GetVideo(Video) returns (Video){}
 }
 
 message Channel{
-  string url = 1;
+  string url = 1; // just a youtube page link conclude video
   string name = 2;
   repeated string videoIds = 3;
 }

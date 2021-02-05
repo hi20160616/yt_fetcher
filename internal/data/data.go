@@ -39,17 +39,6 @@ func (fr *fetcherRepo) GetVideoIds(c *pb.Channel) (*pb.Channel, error) {
 	return c, nil
 }
 
-func (fr *fetcherRepo) videoIdsInit(c *pb.Channel) error {
-	var err error
-	if len(c.VideoIds) == 0 {
-		c, err = fr.GetVideoIds(c)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // NewVideo make and return Video object with this id.
 func (fr *fetcherRepo) NewVideo(id string) (*pb.Video, error) {
 	v := &pb.Video{Id: id}
@@ -80,6 +69,17 @@ func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 	v.Author = video.Author
 	v.LastUpdated = timestamppb.New(ttt)
 	return v, nil
+}
+
+func (fr *fetcherRepo) videoIdsInit(c *pb.Channel) error {
+	var err error
+	if len(c.VideoIds) == 0 {
+		c, err = fr.GetVideoIds(c)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (fr *fetcherRepo) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
