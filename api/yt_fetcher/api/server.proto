@@ -10,6 +10,7 @@ package yt_fetcher.api;
 import "google/protobuf/timestamp.proto";
 
 service YoutubeFetcher{
+  rpc GetVideoIds(Channel) returns (Channel) {}
   rpc GetVideos(Channel) returns (Videos){}
   rpc GetVideo(Video) returns (Video){}
 }
@@ -17,6 +18,7 @@ service YoutubeFetcher{
 message Channel{
   string url = 1;
   string name = 2;
+  repeated string videoIds = 3;
 }
 
 message Video{

@@ -1,9 +1,9 @@
 package data
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -22,35 +22,47 @@ func NewFetcherRepo() biz.FetcherRepo {
 	return &fetcherRepo{}
 }
 
-func (fr *fetcherRepo) GetAndSetLinks(f *biz.Fetcher) ([]string, error) {
-	// is it can fetch by youtube api or youtube v2?
-	links, err := exhtml.ExtractLinks(f.Entrance.String())
+// ExtractVideosIds only extract videoIds at that page loaded first
+func (fr *fetcherRepo) GetVideoIds(c *pb.Channel) (*pb.Channel, error) {
+	u, err := url.Parse(c.Url)
 	if err != nil {
 		return nil, err
 	}
-	f.Links = links
-	return links, nil
+	videos := []string{}
+	raw, _, err := exhtml.GetRawAndDoc(u, 1*time.Minute)
+	re := regexp.MustCompile(`"gridVideoRenderer":{"videoId":"(.*?)","thumbnail":{"thumbnails"`)
+	rs := re.FindAllSubmatch(raw, -1)
+	for _, r := range rs {
+		videos = append(videos, string(r[1]))
+	}
+	c.VideoIds = videos
+	return c, nil
 }
 
-// NewVideo parse _url, get video id from arg `v`, make and return Video object with this id.
-func (fr *fetcherRepo) NewVideo(_url string) (*pb.Video, error) {
-	u, err := url.Parse(_url)
-	if err != nil {
-		return nil, err
+func (fr *fetcherRepo) videoIdsInit(c *pb.Channel) error {
+	var err error
+	if len(c.VideoIds) == 0 {
+		c, err = fr.GetVideoIds(c)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
+}
 
-	v := &pb.Video{Id: u.Query().Get("v")}
+// NewVideo make and return Video object with this id.
+func (fr *fetcherRepo) NewVideo(id string) (*pb.Video, error) {
+	v := &pb.Video{Id: id}
 	if v.Id == "" {
-		return nil, errors.New("NewVideo err: no id got from url: " + _url)
+		return nil, fmt.Errorf("NewVideo err: id is nil")
 	}
-
 	return v, nil
 }
 
 // GetVideo get video info if it's Id is currect
 func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 	if v.Id == "" {
-		return nil, errors.New("GetVideo err: video id is nil.")
+		return nil, fmt.Errorf("GetVideo err: video id is nil.")
 	}
 	client := youtube.Client{}
 	video, err := client.GetVideo(v.Id)
@@ -70,10 +82,13 @@ func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 	return v, nil
 }
 
-func (fr *fetcherRepo) GetVideos(f *biz.Fetcher) ([]*pb.Video, error) {
+func (fr *fetcherRepo) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
+	if err := fr.videoIdsInit(c); err != nil {
+		return nil, err
+	}
 	videos := []*pb.Video{}
-	for _, link := range f.Links {
-		v, err := fr.NewVideo(link)
+	for _, id := range c.VideoIds {
+		v, err := fr.NewVideo(id)
 		if err != nil {
 			return nil, err
 		}
@@ -82,7 +97,6 @@ func (fr *fetcherRepo) GetVideos(f *biz.Fetcher) ([]*pb.Video, error) {
 			return nil, err
 		}
 		videos = append(videos, v)
-		fmt.Println("video links: " + link)
 	}
 	return videos, nil
 }

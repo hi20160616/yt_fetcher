@@ -17,6 +17,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type YoutubeFetcherClient interface {
+	GetVideoIds(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Channel, error)
 	GetVideos(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Videos, error)
 	GetVideo(ctx context.Context, in *Video, opts ...grpc.CallOption) (*Video, error)
 }
@@ -27,6 +28,15 @@ type youtubeFetcherClient struct {
 
 func NewYoutubeFetcherClient(cc grpc.ClientConnInterface) YoutubeFetcherClient {
 	return &youtubeFetcherClient{cc}
+}
+
+func (c *youtubeFetcherClient) GetVideoIds(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Channel, error) {
+	out := new(Channel)
+	err := c.cc.Invoke(ctx, "/yt_fetcher.api.YoutubeFetcher/GetVideoIds", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *youtubeFetcherClient) GetVideos(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Videos, error) {
@@ -51,6 +61,7 @@ func (c *youtubeFetcherClient) GetVideo(ctx context.Context, in *Video, opts ...
 // All implementations must embed UnimplementedYoutubeFetcherServer
 // for forward compatibility
 type YoutubeFetcherServer interface {
+	GetVideoIds(context.Context, *Channel) (*Channel, error)
 	GetVideos(context.Context, *Channel) (*Videos, error)
 	GetVideo(context.Context, *Video) (*Video, error)
 	mustEmbedUnimplementedYoutubeFetcherServer()
@@ -60,6 +71,9 @@ type YoutubeFetcherServer interface {
 type UnimplementedYoutubeFetcherServer struct {
 }
 
+func (UnimplementedYoutubeFetcherServer) GetVideoIds(context.Context, *Channel) (*Channel, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetVideoIds not implemented")
+}
 func (UnimplementedYoutubeFetcherServer) GetVideos(context.Context, *Channel) (*Videos, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVideos not implemented")
 }
@@ -77,6 +91,24 @@ type UnsafeYoutubeFetcherServer interface {
 
 func RegisterYoutubeFetcherServer(s grpc.ServiceRegistrar, srv YoutubeFetcherServer) {
 	s.RegisterService(&YoutubeFetcher_ServiceDesc, srv)
+}
+
+func _YoutubeFetcher_GetVideoIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Channel)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(YoutubeFetcherServer).GetVideoIds(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/yt_fetcher.api.YoutubeFetcher/GetVideoIds",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(YoutubeFetcherServer).GetVideoIds(ctx, req.(*Channel))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _YoutubeFetcher_GetVideos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -122,6 +154,10 @@ var YoutubeFetcher_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "yt_fetcher.api.YoutubeFetcher",
 	HandlerType: (*YoutubeFetcherServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetVideoIds",
+			Handler:    _YoutubeFetcher_GetVideoIds_Handler,
+		},
 		{
 			MethodName: "GetVideos",
 			Handler:    _YoutubeFetcher_GetVideos_Handler,

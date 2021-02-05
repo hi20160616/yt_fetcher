@@ -2,33 +2,35 @@ package biz
 
 import (
 	"errors"
-	"net/url"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 )
-
-type Fetcher struct {
-	Entrance *url.URL
-	Links    []string
-}
 
 type FetcherCase struct {
 	repo FetcherRepo
 }
 
 type FetcherRepo interface {
-	GetAndSetLinks(*Fetcher) ([]string, error)
 	NewVideo(string) (*pb.Video, error)
 	GetVideo(*pb.Video) (*pb.Video, error)
-	GetVideos(*Fetcher) ([]*pb.Video, error)
+	GetVideoIds(*pb.Channel) (*pb.Channel, error)
+	GetVideos(*pb.Channel) ([]*pb.Video, error)
 }
 
 func NewFetcherCase(repo FetcherRepo) *FetcherCase {
 	return &FetcherCase{repo: repo}
 }
 
-func (fc *FetcherCase) GetVideos(f *Fetcher) ([]*pb.Video, error) {
-	videos, err := fc.repo.GetVideos(f)
+func (fc *FetcherCase) GetVideoIds(c *pb.Channel) (*pb.Channel, error) {
+	c, err := fc.repo.GetVideoIds(c)
+	if err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+func (fc *FetcherCase) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
+	videos, err := fc.repo.GetVideos(c)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package data
 
 import (
+	"fmt"
 	"log"
 	"testing"
 
@@ -8,12 +9,37 @@ import (
 )
 
 func TestGetVideo(t *testing.T) {
-	f := NewFetcherRepo()
+	fr := NewFetcherRepo()
 	v := &pb.Video{Id: "nyfAij5B9fM"}
-	v, err := f.GetVideo(v)
+	v, err := fr.GetVideo(v)
 	if err != nil {
 		t.Fatal(err)
 	}
-	// log.Println(v.GetTitle())
+	log.Println(v)
+}
+
+func TestGetVideoIds(t *testing.T) {
+	fr := NewFetcherRepo()
+	c := &pb.Channel{Url: "https://www.youtube.com/channel/UCCtTgzGzQSWVzCG0xR7U-MQ/videos"}
+
+	_, err := fr.GetVideoIds(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, id := range c.VideoIds {
+		fmt.Println(id)
+	}
+
+}
+
+func TestGetVideos(t *testing.T) {
+	fr := NewFetcherRepo()
+	c := &pb.Channel{Url: "https://www.youtube.com/channel/UCCtTgzGzQSWVzCG0xR7U-MQ/videos"}
+
+	v, err := fr.GetVideos(c)
+	if err != nil {
+		t.Fatal(err)
+	}
 	log.Println(v)
 }

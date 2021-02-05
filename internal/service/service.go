@@ -2,10 +2,8 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
-	"net/url"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 	"github.com/hi20160616/yt_fetcher/internal/biz"
@@ -47,40 +45,31 @@ func (s *Server) Stop(ctx context.Context) error {
 	return nil
 }
 
+// Get info from Video and set it to Video
 func (s *Server) GetVideo(ctx context.Context, in *pb.Video) (*pb.Video, error) {
-	log.Println("Get info from Video and set it to Video")
-	// in.Title = "Title get from url"
-	// in.Id = "url from `in` pre-set"
-	// in.Description = "get and set after fetch from url"
-	// in.Author = "this is channel name that pre-set"
-	// in.LastUpdated = in.GetLastUpdated() // "this timestamp is get from video url pre-setted"
-	// return &pb.Video{
-	//         Title:       in.Title,
-	//         LastUpdated: in.LastUpdated,
-	// }, nil
+	log.Println("Get one video")
 	v, err := s.fc.GetVideo(in)
 	if err != nil {
-		fmt.Printf("%+v", err)
-		return nil, errors.WithMessagef(err, "service.Server.GetVideo err")
+		log.Printf("GetVideo err: %+v", err)
+		return nil, errors.WithMessage(err, "service.Server.GetVideo err")
 	}
-	fmt.Println(v.Title)
 	return v, nil
 }
 
+func (s *Server) GetVideoIds(ctx context.Context, in *pb.Channel) (*pb.Channel, error) {
+	log.Println("Get video ids")
+	s.fc.GetVideoIds(in)
+	return in, nil
+}
+
+// Get videos' info
 func (s *Server) GetVideos(ctx context.Context, in *pb.Channel) (*pb.Videos, error) {
 	log.Println("Get videos")
-	log.Println("fetch video links from channel")
-	// dto -> do
-	u, err := url.Parse(in.Url)
-	if err != nil {
-		return nil, err
-	}
-	f := &biz.Fetcher{Entrance: u}
-
 	// call biz
-	videos, err := s.fc.GetVideos(f)
+	videos, err := s.fc.GetVideos(in)
 	if err != nil {
-		return nil, err
+		log.Printf("GetVideos parse url err: %+v", err)
+		return nil, errors.WithMessage(err, "service.Server.GetVideos err")
 	}
 	return &pb.Videos{Videos: videos}, nil
 }
