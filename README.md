@@ -1,5 +1,6 @@
 # Youtube Fetcher
 
+This is a Microservice providing youtube videos info fetch.
 
 # gRPC
 ```
