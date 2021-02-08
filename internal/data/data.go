@@ -22,21 +22,48 @@ func NewFetcherRepo() biz.FetcherRepo {
 	return &fetcherRepo{}
 }
 
-// ExtractVideosIds only extract videoIds at that page loaded first
+// ExtractVideosIds only extract videoIds at that page loaded first.
+// search database first and working the channelId if not met.
 func (fr *fetcherRepo) GetVideoIds(c *pb.Channel) (*pb.Channel, error) {
 	u, err := url.Parse(c.Url)
 	if err != nil {
 		return nil, err
 	}
-	videos := []string{}
+
+	vids, err := selectVidsFromDb(u.Query().Get("v"))
+	if err != nil {
+		return c, nil
+	}
+
+	if vids == nil {
+		vids, err = getVidsFromSource(u)
+		if err != nil {
+			return nil, err
+		}
+		// TODO: DB insert vids
+	}
+	c.VideoIds = vids
+	return c, nil
+}
+
+// selectVidsFromDb select vid from db.yt_fetcher.videos where cid = 'channelId'
+func selectVidsFromDb(channelId string) ([]string, error) {
+	return nil, nil
+}
+
+// getVidsFromSource get vids from raw html page.
+func getVidsFromSource(u *url.URL) ([]string, error) {
+	vids := []string{}
 	raw, _, err := exhtml.GetRawAndDoc(u, 1*time.Minute)
+	if err != nil {
+		return nil, err
+	}
 	re := regexp.MustCompile(`"gridVideoRenderer":{"videoId":"(.*?)","thumbnail":{"thumbnails"`)
 	rs := re.FindAllSubmatch(raw, -1)
 	for _, r := range rs {
-		videos = append(videos, string(r[1]))
+		vids = append(vids, string(r[1]))
 	}
-	c.VideoIds = videos
-	return c, nil
+	return vids, nil
 }
 
 // NewVideo make and return Video object with this id.
@@ -51,8 +78,31 @@ func (fr *fetcherRepo) NewVideo(id string) (*pb.Video, error) {
 // GetVideo get video info if it's Id is currect
 func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 	if v.Id == "" {
-		return nil, fmt.Errorf("GetVideo err: video id is nil.")
+		return nil, fmt.Errorf("GetVideo err: video id is nil, you need fr.NewVideo(id) first.")
 	}
+
+	_v, err := selectVideoFromDb(v.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	if _v == nil {
+		_v, err = getVideoFromApi(v.Id)
+		if err != nil {
+			return nil, err
+		}
+	}
+	v = _v
+	return v, nil
+}
+
+// selectVideoFromDb select * from db.yt_fetcher.videos where id = 'vid'
+func selectVideoFromDb(vid string) (*pb.Video, error) {
+	return nil, nil
+}
+
+func getVideoFromApi(vid string) (*pb.Video, error) {
+	v := &pb.Video{Id: vid}
 	client := youtube.Client{}
 	video, err := client.GetVideo(v.Id)
 	if err != nil {

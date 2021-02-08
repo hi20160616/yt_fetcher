@@ -8,6 +8,7 @@ import (
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 )
 
+// go test -test.run=^TestGetVideo$
 func TestGetVideo(t *testing.T) {
 	fr := NewFetcherRepo()
 	v := &pb.Video{Id: "nyfAij5B9fM"}
@@ -18,6 +19,7 @@ func TestGetVideo(t *testing.T) {
 	log.Println(v)
 }
 
+// go test -test.run=^TestGetVideoIds$
 func TestGetVideoIds(t *testing.T) {
 	fr := NewFetcherRepo()
 	c := &pb.Channel{Url: "https://www.youtube.com/channel/UCCtTgzGzQSWVzCG0xR7U-MQ/videos"}
@@ -33,6 +35,7 @@ func TestGetVideoIds(t *testing.T) {
 
 }
 
+// go test -test.run=^TestGetVideos$
 func TestGetVideos(t *testing.T) {
 	fr := NewFetcherRepo()
 	c := &pb.Channel{Url: "https://www.youtube.com/channel/UCCtTgzGzQSWVzCG0xR7U-MQ/videos"}

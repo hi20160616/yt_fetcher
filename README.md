@@ -2,6 +2,34 @@
 
 This is a Microservice providing youtube videos info fetch.
 
+# MySQL prepare
+
+## MySQL container install
+
+```
+$ docker pull mysql/mysql-server:latest
+$ docker run --name=yt_fetcher -e MYSQL_ROOT_PASSWORD='rootpassword' -d mysql/mysql-server:latest
+$ docker exec -it yt_fetcher mysql -uroot -prootpassword
+mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY '[newpassword]';
+```
+
+## Create tables
+
+1. Create Database
+```
+$ mysqladmin create yt_fetcher -uroot -p
+# OR
+mysql> create database yt_fetcher
+mysql> use yt_fetcher
+```
+
+2. Create Tables
+```
+mysql> create table channels ( id varchar(24), name varchar(255) );
+mysql> create table videos ( id varchar(11), title varchar(255), description varchar(2000), cid varchar(24), last_update DATE);
+```
+
+
 # gRPC
 ```
 protoc --go_out=. --go_opt=paths=source_relative \
