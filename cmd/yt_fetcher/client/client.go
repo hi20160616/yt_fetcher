@@ -6,7 +6,6 @@ import (
 	"time"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
-	"github.com/hi20160616/yt_fetcher/internal/pkg/log"
 	"google.golang.org/grpc"
 )
 
@@ -45,10 +44,4 @@ func main() {
 	// for _, e := range r.Videos {
 	//         fmt.Println(e.Title)
 	// }
-
-	// test record errors by log.
-	fmt.Println("basic logging and modification of logger:")
-	log.Log()
-	fmt.Println("logging 'handled' errors:")
-	log.FinalDestination()
 }
