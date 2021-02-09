@@ -21,7 +21,7 @@ func main() {
 	defer cancel()
 
 	// get video: pass test
-	v, err := c.GetVideo(ctx, &pb.Video{Id: "nyfAij5B9fM"})
+	v, err := c.GetVideo(ctx, &pb.Video{Vid: "nyfAij5B9fM"})
 	if err != nil {
 		// log.Printf("c.GetVideo err: %+v", err)
 	}

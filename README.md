@@ -8,7 +8,7 @@ This is a Microservice providing youtube videos info fetch.
 
 ```
 $ docker pull mysql/mysql-server:latest
-$ docker run --name=yt_fetcher -e MYSQL_ROOT_PASSWORD='rootpassword' -d mysql/mysql-server:latest
+$ docker run -p 3306:3306 --name=yt_fetcher -e MYSQL_ROOT_PASSWORD='rootpassword' -d mysql/mysql-server:latest
 $ docker exec -it yt_fetcher mysql -uroot -prootpassword
 mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY '[newpassword]';
 ```
@@ -16,17 +16,36 @@ mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY '[newpassword]';
 ## Create tables
 
 1. Create Database
+https://dev.mysql.com/doc/refman/8.0/en/entering-queries.html
 ```
-$ mysqladmin create yt_fetcher -uroot -p
+$ mysqladmin CREATE yt_fetcher -uroot -p
 # OR
-mysql> create database yt_fetcher
-mysql> use yt_fetcher
+mysql> CREATE database yt_fetcher;
+mysql> use yt_fetcher;
 ```
 
-2. Create Tables
+2. Create Tablese
 ```
-mysql> create table channels ( id varchar(24), name varchar(255) );
-mysql> create table videos ( id varchar(11), title varchar(255), description varchar(2000), cid varchar(24), last_update DATE);
+mysql> CREATE TABLE videos ( vid VARCHAR(11) NOT NULL, title VARCHAR(255), description VARCHAR(2000), cid VARCHAR(24), cname VARCHAR(100), last_updated VARCHAR(16), UNIQUE KEY (vid));
+mysql> describe videos;
++--------------+---------------+------+-----+---------+-------+
+| Field        | Type          | Null | Key | Default | Extra |
++--------------+---------------+------+-----+---------+-------+
+| id           | VARCHAR(11)   | YES  |     | NULL    |       |
+| title        | VARCHAR(255)  | YES  |     | NULL    |       |
+| description  | VARCHAR(2000) | YES  |     | NULL    |       |
+| cid          | VARCHAR(24)   | YES  |     | NULL    |       |
+| last_updated | date          | YES  |     | NULL    |       |
++--------------+---------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
+```
+
+3. Create User for the database
+https://dev.mysql.com/doc/refman/8.0/en/create-user.html
+https://dev.mysql.com/doc/refman/8.0/en/grant.html#grant-database-privileges
+```
+CREATE USER 'yt_fetcher'@'%' IDENTIFIED BY 'ytpassword';
+GRANT ALL ON yt_fetcher.* TO 'yt_fetcher'@'%';
 ```
 
 

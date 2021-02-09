@@ -17,8 +17,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type YoutubeFetcherClient interface {
+	// Get videoIds from a youtube video list page
 	GetVideoIds(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Channel, error)
+	// Get videos info by page url set in channel
 	GetVideos(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Videos, error)
+	// Get video info by videoId
 	GetVideo(ctx context.Context, in *Video, opts ...grpc.CallOption) (*Video, error)
 }
 
@@ -61,8 +64,11 @@ func (c *youtubeFetcherClient) GetVideo(ctx context.Context, in *Video, opts ...
 // All implementations must embed UnimplementedYoutubeFetcherServer
 // for forward compatibility
 type YoutubeFetcherServer interface {
+	// Get videoIds from a youtube video list page
 	GetVideoIds(context.Context, *Channel) (*Channel, error)
+	// Get videos info by page url set in channel
 	GetVideos(context.Context, *Channel) (*Videos, error)
+	// Get video info by videoId
 	GetVideo(context.Context, *Video) (*Video, error)
 	mustEmbedUnimplementedYoutubeFetcherServer()
 }

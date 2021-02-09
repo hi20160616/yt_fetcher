@@ -38,7 +38,7 @@ func (fc *FetcherCase) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
 }
 
 func (fc *FetcherCase) GetVideo(v *pb.Video) (*pb.Video, error) {
-	if v.Id == "" {
+	if v.Vid == "" {
 		return nil, errors.New("fc.GetVideo err: video id is nil")
 	}
 	video, err := fc.repo.GetVideo(v)

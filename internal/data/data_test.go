@@ -11,7 +11,7 @@ import (
 // go test -test.run=^TestGetVideo$
 func TestGetVideo(t *testing.T) {
 	fr := NewFetcherRepo()
-	v := &pb.Video{Id: "nyfAij5B9fM"}
+	v := &pb.Video{Vid: "nyfAij5B9fM"}
 	v, err := fr.GetVideo(v)
 	if err != nil {
 		t.Fatal(err)

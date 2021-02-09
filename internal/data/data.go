@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
-	"strconv"
 	"time"
 
 	"github.com/hi20160616/exhtml"
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 	"github.com/hi20160616/yt_fetcher/internal/biz"
+	db "github.com/hi20160616/yt_fetcher/internal/pkg/db/mysql"
 	youtube "github.com/kkdai/youtube/v2"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var _ biz.FetcherRepo = new(fetcherRepo)
@@ -40,7 +39,7 @@ func (fr *fetcherRepo) GetVideoIds(c *pb.Channel) (*pb.Channel, error) {
 		if err != nil {
 			return nil, err
 		}
-		// TODO: DB insert vids
+		// TODO: Insert videos and cid to db
 	}
 	c.VideoIds = vids
 	return c, nil
@@ -48,7 +47,7 @@ func (fr *fetcherRepo) GetVideoIds(c *pb.Channel) (*pb.Channel, error) {
 
 // selectVidsFromDb select vid from db.yt_fetcher.videos where cid = 'channelId'
 func selectVidsFromDb(channelId string) ([]string, error) {
-	return nil, nil
+	return db.QVidsByCid(channelId)
 }
 
 // getVidsFromSource get vids from raw html page.
@@ -68,8 +67,8 @@ func getVidsFromSource(u *url.URL) ([]string, error) {
 
 // NewVideo make and return Video object with this id.
 func (fr *fetcherRepo) NewVideo(id string) (*pb.Video, error) {
-	v := &pb.Video{Id: id}
-	if v.Id == "" {
+	v := &pb.Video{Vid: id}
+	if v.Vid == "" {
 		return nil, fmt.Errorf("NewVideo err: id is nil")
 	}
 	return v, nil
@@ -77,20 +76,21 @@ func (fr *fetcherRepo) NewVideo(id string) (*pb.Video, error) {
 
 // GetVideo get video info if it's Id is currect
 func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
-	if v.Id == "" {
+	if v.Vid == "" {
 		return nil, fmt.Errorf("GetVideo err: video id is nil, you need fr.NewVideo(id) first.")
 	}
 
-	_v, err := selectVideoFromDb(v.Id)
+	_v, err := selectVideoFromDb(v.Vid)
 	if err != nil {
 		return nil, err
 	}
 
 	if _v == nil {
-		_v, err = getVideoFromApi(v.Id)
+		_v, err = getVideoFromApi(v.Vid)
 		if err != nil {
 			return nil, err
 		}
+		// TODO: Insert video and cid, name to db
 	}
 	v = _v
 	return v, nil
@@ -98,26 +98,37 @@ func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 
 // selectVideoFromDb select * from db.yt_fetcher.videos where id = 'vid'
 func selectVideoFromDb(vid string) (*pb.Video, error) {
-	return nil, nil
+	v, err := db.QVideoByVid(vid)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.Video{
+		Vid:         vid,
+		Title:       v[1],
+		Description: v[2],
+		Cid:         v[3],
+		LastUpdated: v[4],
+	}, nil
 }
 
 func getVideoFromApi(vid string) (*pb.Video, error) {
-	v := &pb.Video{Id: vid}
+	v := &pb.Video{Vid: vid}
 	client := youtube.Client{}
-	video, err := client.GetVideo(v.Id)
+	video, err := client.GetVideo(v.Vid)
 	if err != nil {
 		return nil, err
 	}
 	t := video.Formats.FindByQuality("medium").LastModified
-	tt, err := strconv.ParseInt(t[:10], 10, 64)
-	if err != nil {
-		return nil, err
-	}
-	ttt := time.Unix(tt, 0)
+	// tt, err := strconv.ParseInt(t[:10], 10, 64)
+	// if err != nil {
+	//         return nil, err
+	// }
+	// ttt := time.Unix(tt, 0)
+	// v.LastUpdated = timestamppb.New(ttt)
 	v.Title = video.Title
 	v.Description = video.Description
-	v.Author = video.Author
-	v.LastUpdated = timestamppb.New(ttt)
+	v.Cid = video.Author
+	v.LastUpdated = t
 	return v, nil
 }
 
