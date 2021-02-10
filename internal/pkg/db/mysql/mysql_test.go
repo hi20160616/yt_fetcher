@@ -3,10 +3,20 @@ package mysql
 import (
 	"fmt"
 	"testing"
+
+	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 )
 
 func TestInsertVideo(t *testing.T) {
-	if err := InsertVideo(); err != nil {
+	video := &pb.Video{
+		Vid:         "5TW7ALXdlw8",
+		Title:       "專給最勇敢警探的10道神秘謎題",
+		Description: "test for description",
+		Cid:         "UCCtTgzGzQSWVzCG0xR7U-MQ",
+		Cname:       "亮生活 / Light Side",
+		LastUpdated: "1612601612245194",
+	}
+	if err := InsertVideo(video); err != nil {
 		t.Errorf("err: %+v", err)
 	}
 }

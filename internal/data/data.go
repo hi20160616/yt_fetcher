@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/hi20160616/exhtml"
@@ -28,26 +29,24 @@ func (fr *fetcherRepo) GetVideoIds(c *pb.Channel) (*pb.Channel, error) {
 	if err != nil {
 		return nil, err
 	}
+	cid := strings.Split(u.Path, "/")[2]
 
-	vids, err := selectVidsFromDb(u.Query().Get("v"))
+	vids, err := db.QVidsByCid(cid)
 	if err != nil {
 		return c, nil
 	}
 
-	if vids == nil {
-		vids, err = getVidsFromSource(u)
-		if err != nil {
+	if vids == nil { // means this is a new channel
+		if vids, err = getVidsFromSource(u); err != nil {
 			return nil, err
 		}
-		// TODO: Insert videos and cid to db
+		// Insert videos and cid to db if got them right.
+		if err = db.InsertVids(vids, cid); err != nil {
+			return nil, err
+		}
 	}
 	c.VideoIds = vids
 	return c, nil
-}
-
-// selectVidsFromDb select vid from db.yt_fetcher.videos where cid = 'channelId'
-func selectVidsFromDb(channelId string) ([]string, error) {
-	return db.QVidsByCid(channelId)
 }
 
 // getVidsFromSource get vids from raw html page.
@@ -85,7 +84,7 @@ func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 		return nil, err
 	}
 
-	if _v == nil {
+	if _v.Title == "" { // it means this is a new video
 		_v, err = getVideoFromApi(v.Vid)
 		if err != nil {
 			return nil, err

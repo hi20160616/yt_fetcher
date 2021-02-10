@@ -31,13 +31,14 @@ mysql> describe videos;
 +--------------+---------------+------+-----+---------+-------+
 | Field        | Type          | Null | Key | Default | Extra |
 +--------------+---------------+------+-----+---------+-------+
-| id           | VARCHAR(11)   | YES  |     | NULL    |       |
-| title        | VARCHAR(255)  | YES  |     | NULL    |       |
-| description  | VARCHAR(2000) | YES  |     | NULL    |       |
-| cid          | VARCHAR(24)   | YES  |     | NULL    |       |
-| last_updated | date          | YES  |     | NULL    |       |
+| vid          | varchar(11)   | NO   | PRI | NULL    |       |
+| title        | varchar(255)  | YES  |     | NULL    |       |
+| description  | varchar(2000) | YES  |     | NULL    |       |
+| cid          | varchar(24)   | YES  |     | NULL    |       |
+| cname        | varchar(100)  | YES  |     | NULL    |       |
+| last_updated | varchar(16)   | YES  |     | NULL    |       |
 +--------------+---------------+------+-----+---------+-------+
-5 rows in set (0.00 sec)
+6 rows in set (0.04 sec)
 ```
 
 3. Create User for the database

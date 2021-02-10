@@ -26,47 +26,96 @@ func DB() (*sql.DB, error) {
 	return db, nil
 }
 
-func InsertVideo() error {
+func InsertVids(vids []string, cid string) error {
 	db, err := DB()
 	if err != nil {
 		return err
 	}
 
-	video := &pb.Video{
-		Vid:         "5TW7ALXdlw8",
-		Title:       "專給最勇敢警探的10道神秘謎題",
-		Cid:         "UCCtTgzGzQSWVzCG0xR7U-MQ",
-		LastUpdated: "1612601612245194",
-	}
-
-	stmtIns, err := db.Prepare("insert into videos(vid, title, cid, last_updated) values(?,?,?,?)")
+	stmtIns, err := db.Prepare("INSERT INTO videos(vid, cid) VALUES(?, ?)")
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 	defer stmtIns.Close()
-	if _, err = stmtIns.Exec(video.Vid, video.Title, video.Cid, video.LastUpdated); err != nil {
+	for _, vid := range vids {
+		if _, err = stmtIns.Exec(vid, cid); err != nil {
+			return err
+		}
+	}
+	return err
+}
+
+// TODO: pass test
+func UpdateVideo(v *pb.Video) error {
+	db, err := DB()
+	if err != nil {
+		return nil
+	}
+
+	stmt, err := db.Prepare("UPDATE videos SET title=?, description=?, cid=?, cname=?, last_updated=? WHERE vid=?")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	defer stmt.Close()
+	if _, err := stmt.Exec(v.Title, v.Description, v.Cid, v.Cname, v.LastUpdated, v.Vid); err != nil {
 		return err
 	}
 	return nil
 }
 
-func QVideoByVid(id string) ([]string, error) {
+// TODO: how to deal duplicated vid
+// TODO: rename to AddVideo
+func InsertVideo(v *pb.Video) error {
+	db, err := DB()
+	if err != nil {
+		return err
+	}
+
+	// TODO: if vid exist, update the values, or not exist, insert
+
+	stmtIns, err := db.Prepare("insert into videos(vid, title, description, cid, cname, last_updated) values(?,?,?,?,?,?)")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	defer stmtIns.Close()
+	if _, err = stmtIns.Exec(v.Vid, v.Title, v.Description, v.Cid, v.Cname, v.LastUpdated); err != nil {
+		return err
+	}
+	return nil
+}
+
+func VidExist(vid string) (bool, error) {
+	db, err := DB()
+	if err != nil {
+		return false, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT * FROM videos WHERE vid=?", vid)
+	if err != nil {
+		return false, err
+	}
+	return rows.Next(), nil
+}
+
+func QVideoByVid(vid string) ([]string, error) {
 	db, err := DB()
 	if err != nil {
 		return nil, err
 	}
 	video := []string{}
-	var title, description, cid string
-	var last_updated string
-	err = db.QueryRow("select * from videos where id=?", id).Scan(&id, &title, &description, &cid, &last_updated)
+	var title, description, cid, cname, last_updated sql.NullString
+	err = db.QueryRow("select * from videos where vid=?", vid).Scan(&vid, &title, &description, &cid, &cname, &last_updated)
 	switch {
 	case err == sql.ErrNoRows:
-		return nil, errors.New("no video with id " + id)
+		return nil, errors.New("no video with id " + vid)
 	case err != nil:
 		return nil, err
 	default:
-		video = append(video, id, title, description, cid, last_updated)
+		video = append(video, vid, title.String, description.String, cid.String, cname.String, last_updated.String)
 	}
 	return video, nil
 }
@@ -77,7 +126,7 @@ func QVidsByCid(cid string) ([]string, error) {
 		return nil, err
 	}
 
-	rows, err := db.Query("select id from videos where cid=?", cid)
+	rows, err := db.Query("select vid from videos where cid=?", cid)
 	if err != nil {
 		return nil, err
 	}
@@ -85,13 +134,13 @@ func QVidsByCid(cid string) ([]string, error) {
 	vids := make([]string, 0)
 
 	for rows.Next() {
-		var id string
-		if err := rows.Scan(&id); err != nil {
+		var vid string
+		if err := rows.Scan(&vid); err != nil {
 			// Check for a scan error.
 			// Query rows will be closed with defer
 			return nil, err
 		}
-		vids = append(vids, id)
+		vids = append(vids, vid)
 	}
 
 	rerr := rows.Close()
