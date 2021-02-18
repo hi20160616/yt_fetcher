@@ -13,7 +13,7 @@ type FetcherCase struct {
 type FetcherRepo interface {
 	NewVideo(string) (*pb.Video, error)
 	GetVideo(*pb.Video) (*pb.Video, error)
-	GetVideoIds(*pb.Channel) (*pb.Channel, error)
+	GetVids(*pb.Channel) (*pb.Channel, error)
 	GetVideos(*pb.Channel) ([]*pb.Video, error)
 }
 
@@ -22,7 +22,7 @@ func NewFetcherCase(repo FetcherRepo) *FetcherCase {
 }
 
 func (fc *FetcherCase) GetVideoIds(c *pb.Channel) (*pb.Channel, error) {
-	c, err := fc.repo.GetVideoIds(c)
+	c, err := fc.repo.GetVids(c)
 	if err != nil {
 		return nil, err
 	}
@@ -47,17 +47,3 @@ func (fc *FetcherCase) GetVideo(v *pb.Video) (*pb.Video, error) {
 	}
 	return video, nil
 }
-
-// func (fc *FetcherCase) Crawl(f *Fetcher) error {
-//         defer func() {
-//                 if err := recover(); err != nil {
-//                         log.Printf("Crawl err: %v", err)
-//                 }
-//         }()
-//         fmt.Println("fetch links from ", f.Entrance.String())
-//         var err error
-//         if f.Links, err = fc.repo.GetAndSetLinks(f); err != nil {
-//                 return err
-//         }
-//         return nil
-// }

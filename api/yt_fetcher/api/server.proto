@@ -18,8 +18,8 @@ service YoutubeFetcher{
 }
 
 message Channel{
-  string url = 1; // just a youtube page link conclude video
-  repeated string videoIds = 3;
+  string cid = 1; 
+  repeated string vids = 2;
 }
 
 message Video{

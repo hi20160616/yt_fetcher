@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/hi20160616/exhtml"
@@ -24,36 +23,10 @@ func NewFetcherRepo() biz.FetcherRepo {
 	return &fetcherRepo{}
 }
 
-// ExtractVideosIds only extract videoIds at that page loaded first.
-// search database first and working the channelId if not met.
-func (fr *fetcherRepo) GetVideoIds(c *pb.Channel) (*pb.Channel, error) {
-	u, err := url.Parse(c.Url)
-	if err != nil {
-		return nil, err
-	}
-	cid := strings.Split(u.Path, "/")[2]
-
-	vids, err := db.QVidsByCid(cid)
-	if err != nil {
-		return c, nil
-	}
-
-	if vids == nil { // means this is a new channel
-		if vids, err = getVidsFromSource(u); err != nil {
-			return nil, err
-		}
-		// Insert videos and cid to db if got them right.
-		if err = db.InsertVids(vids, cid); err != nil {
-			return nil, err
-		}
-	}
-	c.VideoIds = vids
-	return c, nil
-}
-
 // getVidsFromSource get vids from raw html page.
-func getVidsFromSource(u *url.URL) ([]string, error) {
+func getVidsFromSource(cid string) ([]string, error) {
 	vids := []string{}
+	u, err := url.Parse("https://www.youtube.com/channel/" + cid + "/videos")
 	raw, _, err := exhtml.GetRawAndDoc(u, 1*time.Minute)
 	if err != nil {
 		return nil, err
@@ -179,10 +152,26 @@ func getVideoFromApi(vid string) (*pb.Video, error) {
 	return v, nil
 }
 
+// GetVids obtain videoIds from video page of the channel just loaded.
+// it will not query from db, because video page always update frequently.
+// Notice: it will storage vids and cid to db
+func (fr *fetcherRepo) GetVids(c *pb.Channel) (*pb.Channel, error) {
+	cid := c.Cid
+	vids, err := getVidsFromSource(cid)
+	if err != nil {
+		return nil, err
+	}
+	if err = db.InsertVids(vids, cid); err != nil {
+		return nil, err
+	}
+	c.Vids = vids
+	return c, nil
+}
+
 func (fr *fetcherRepo) videoIdsInit(c *pb.Channel) error {
 	var err error
-	if len(c.VideoIds) == 0 {
-		c, err = fr.GetVideoIds(c)
+	if len(c.Vids) == 0 {
+		c, err = fr.GetVids(c)
 		if err != nil {
 			return err
 		}
@@ -190,12 +179,16 @@ func (fr *fetcherRepo) videoIdsInit(c *pb.Channel) error {
 	return nil
 }
 
+// GetVideos get and storage videos info to db by videos page of the channel
+// 1. get vids from videos page every request.
+// 2. for range vids and get video info by vid
+// return video slice.
 func (fr *fetcherRepo) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
 	if err := fr.videoIdsInit(c); err != nil {
 		return nil, err
 	}
 	videos := []*pb.Video{}
-	for _, id := range c.VideoIds {
+	for _, id := range c.Vids {
 		v, err := fr.NewVideo(id)
 		if err != nil {
 			return nil, err

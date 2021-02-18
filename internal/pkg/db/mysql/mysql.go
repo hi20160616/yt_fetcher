@@ -130,6 +130,13 @@ func InsertVids(vids []string, cid string) error {
 	defer db.Close()
 	defer stmtIns.Close()
 	for _, vid := range vids {
+		exist, err := VidExist(vid)
+		if err != nil {
+			return err
+		}
+		if exist {
+			continue
+		}
 		if _, err = stmtIns.Exec(vid, cid); err != nil {
 			return err
 		}
@@ -159,14 +166,13 @@ func UpdateVideo(v *pb.Video) error {
 	return nil
 }
 
-// insertVideo just insert v to db with no vid exist judgement.
+// insertVideo insert video to db
+// Notice: No vid exist judgement here
 func insertVideo(v *pb.Video) error {
 	db, err := DB()
 	if err != nil {
 		return err
 	}
-
-	// TODO: if vid exist, update the values, or not exist, insert
 
 	stmtIns, err := db.Prepare("insert into videos(vid, title, description, cid, cname, last_updated) values(?,?,?,?,?,?)")
 	if err != nil {
@@ -200,11 +206,11 @@ func InsertVideo(v *pb.Video) error {
 		return errors.New("provide nil vid")
 	}
 
-	yes, err := VidExist(v.Vid)
+	exist, err := VidExist(v.Vid)
 	if err != nil {
 		return err
 	}
-	if yes {
+	if exist {
 		return UpdateVideo(v)
 	} else {
 		return insertVideo(v)

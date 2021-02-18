@@ -44,16 +44,16 @@ func TestGetVideo(t *testing.T) {
 }
 
 // go test -test.run=^TestGetVideoIds$
-func TestGetVideoIds(t *testing.T) {
+func TestGetVids(t *testing.T) {
 	fr := NewFetcherRepo()
-	c := &pb.Channel{Url: "https://www.youtube.com/channel/UCCtTgzGzQSWVzCG0xR7U-MQ/videos"}
+	c := &pb.Channel{Cid: "UCCtTgzGzQSWVzCG0xR7U-MQ"}
 
-	_, err := fr.GetVideoIds(c)
+	c, err := fr.GetVids(c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	for _, id := range c.VideoIds {
+	for _, id := range c.Vids {
 		fmt.Println(id)
 	}
 
@@ -62,11 +62,11 @@ func TestGetVideoIds(t *testing.T) {
 // go test -test.run=^TestGetVideos$
 func TestGetVideos(t *testing.T) {
 	fr := NewFetcherRepo()
-	c := &pb.Channel{Url: "https://www.youtube.com/channel/UCCtTgzGzQSWVzCG0xR7U-MQ/videos"}
+	c := &pb.Channel{Cid: "UCCtTgzGzQSWVzCG0xR7U-MQ"}
 
-	v, err := fr.GetVideos(c)
+	_, err := fr.GetVideos(c)
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Println(v)
+	// log.Println(v)
 }
