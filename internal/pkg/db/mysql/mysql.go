@@ -26,81 +26,6 @@ func DB() (*sql.DB, error) {
 	return db, nil
 }
 
-func InsertVids(vids []string, cid string) error {
-	db, err := DB()
-	if err != nil {
-		return err
-	}
-
-	stmtIns, err := db.Prepare("INSERT INTO videos(vid, cid) VALUES(?, ?)")
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	defer stmtIns.Close()
-	for _, vid := range vids {
-		if _, err = stmtIns.Exec(vid, cid); err != nil {
-			return err
-		}
-	}
-	return err
-}
-
-// TODO: pass test
-func UpdateVideo(v *pb.Video) error {
-	db, err := DB()
-	if err != nil {
-		return nil
-	}
-
-	stmt, err := db.Prepare("UPDATE videos SET title=?, description=?, cid=?, cname=?, last_updated=? WHERE vid=?")
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	defer stmt.Close()
-	if _, err := stmt.Exec(v.Title, v.Description, v.Cid, v.Cname, v.LastUpdated, v.Vid); err != nil {
-		return err
-	}
-	return nil
-}
-
-// TODO: how to deal duplicated vid
-// TODO: rename to AddVideo
-func InsertVideo(v *pb.Video) error {
-	db, err := DB()
-	if err != nil {
-		return err
-	}
-
-	// TODO: if vid exist, update the values, or not exist, insert
-
-	stmtIns, err := db.Prepare("insert into videos(vid, title, description, cid, cname, last_updated) values(?,?,?,?,?,?)")
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	defer stmtIns.Close()
-	if _, err = stmtIns.Exec(v.Vid, v.Title, v.Description, v.Cid, v.Cname, v.LastUpdated); err != nil {
-		return err
-	}
-	return nil
-}
-
-func VidExist(vid string) (bool, error) {
-	db, err := DB()
-	if err != nil {
-		return false, err
-	}
-	defer db.Close()
-
-	rows, err := db.Query("SELECT * FROM videos WHERE vid=?", vid)
-	if err != nil {
-		return false, err
-	}
-	return rows.Next(), nil
-}
-
 func QVideoByVid(vid string) ([]string, error) {
 	db, err := DB()
 	if err != nil {
@@ -153,4 +78,99 @@ func QVidsByCid(cid string) ([]string, error) {
 	}
 
 	return vids, nil
+}
+
+// InsertVids insert vids with cid
+func InsertVids(vids []string, cid string) error {
+	db, err := DB()
+	if err != nil {
+		return err
+	}
+
+	stmtIns, err := db.Prepare("INSERT INTO videos(vid, cid) VALUES(?, ?)")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	defer stmtIns.Close()
+	for _, vid := range vids {
+		if _, err = stmtIns.Exec(vid, cid); err != nil {
+			return err
+		}
+	}
+	return err
+}
+
+// UpdateVideo update all fields to db except vid
+func UpdateVideo(v *pb.Video) error {
+	if v.Vid == "" {
+		return errors.New("provide nil vid")
+	}
+	db, err := DB()
+	if err != nil {
+		return nil
+	}
+
+	stmt, err := db.Prepare("UPDATE videos SET title=?, description=?, cid=?, cname=?, last_updated=? WHERE vid=?")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	defer stmt.Close()
+	if _, err := stmt.Exec(v.Title, v.Description, v.Cid, v.Cname, v.LastUpdated, v.Vid); err != nil {
+		return err
+	}
+	return nil
+}
+
+// insertVideo just insert v to db with no vid exist judgement.
+func insertVideo(v *pb.Video) error {
+	db, err := DB()
+	if err != nil {
+		return err
+	}
+
+	// TODO: if vid exist, update the values, or not exist, insert
+
+	stmtIns, err := db.Prepare("insert into videos(vid, title, description, cid, cname, last_updated) values(?,?,?,?,?,?)")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	defer stmtIns.Close()
+	if _, err = stmtIns.Exec(v.Vid, v.Title, v.Description, v.Cid, v.Cname, v.LastUpdated); err != nil {
+		return err
+	}
+	return nil
+}
+
+func VidExist(vid string) (bool, error) {
+	db, err := DB()
+	if err != nil {
+		return false, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT * FROM videos WHERE vid=?", vid)
+	if err != nil {
+		return false, err
+	}
+	return rows.Next(), nil
+}
+
+// InsertVideo determine vid exist first, if exist, update or else insert v to db.
+func InsertVideo(v *pb.Video) error {
+	if v.Vid == "" {
+		return errors.New("provide nil vid")
+	}
+
+	yes, err := VidExist(v.Vid)
+	if err != nil {
+		return err
+	}
+	if yes {
+		return UpdateVideo(v)
+	} else {
+		return insertVideo(v)
+	}
 }

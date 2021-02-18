@@ -39,3 +39,17 @@ func TestQVidsByChannelId(t *testing.T) {
 		}
 	}
 }
+
+func TestUpdateVideo(t *testing.T) {
+	video := &pb.Video{
+		Vid:         "5TW7ALXdlw8",
+		Title:       "test title update",
+		Description: "test for description",
+		Cid:         "UCCtTgzGzQSWVzCG0xR7U-MQ",
+		Cname:       "亮生活 / Light Side",
+		LastUpdated: "1612601612245194",
+	}
+	if err := UpdateVideo(video); err != nil {
+		t.Errorf("err: %+v", err)
+	}
+}
