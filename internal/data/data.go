@@ -143,6 +143,22 @@ func selectVideoFromDb(vid string) (*pb.Video, error) {
 	}, nil
 }
 
+// getCid will get cid by vid from db first, then from source of api
+func getCid(vid string) (string, error) {
+	cid, err := db.QCidByVid(vid)
+	if err != nil {
+		return "", err
+	}
+
+	if cid == "" {
+		cid, err = getCidFromSource(vid)
+		if err != nil {
+			return "", err
+		}
+	}
+	return cid, nil
+}
+
 func getVideoFromApi(vid string) (*pb.Video, error) {
 	v := &pb.Video{Vid: vid}
 	client := youtube.Client{}
@@ -150,7 +166,7 @@ func getVideoFromApi(vid string) (*pb.Video, error) {
 	if err != nil {
 		return nil, err
 	}
-	cid, err := getCidFromSource(vid)
+	cid, err := getCid(vid)
 	if err != nil {
 		return nil, err
 	}

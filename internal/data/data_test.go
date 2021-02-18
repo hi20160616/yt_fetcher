@@ -20,6 +20,18 @@ func TestGetCidFromSource(t *testing.T) {
 	}
 }
 
+func TestGetCid(t *testing.T) {
+	ts := "pXV12sqXyKY"
+	got, err := getCid(ts)
+	if err != nil {
+		t.Error(err)
+	}
+	want := "UCPDis9pjXuqyI7RYLJ-TTSA"
+	if got != want {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
 // go test -test.run=^TestGetVideo$
 func TestGetVideo(t *testing.T) {
 	fr := NewFetcherRepo()

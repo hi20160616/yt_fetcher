@@ -98,6 +98,24 @@ func QVidsByCid(cid string) ([]string, error) {
 	return vids, nil
 }
 
+func QCidByVid(vid string) (string, error) {
+	db, err := DB()
+	if err != nil {
+		return "", err
+	}
+
+	stmt, err := db.Prepare("SELECT cid FROM videos WHERE vid = ?")
+	if err != nil {
+		return "", err
+	}
+	defer stmt.Close()
+	var cid string
+	if err = stmt.QueryRow(vid).Scan(&cid); err != nil {
+		return "", err
+	}
+	return cid, nil
+}
+
 // InsertVids insert vids with cid
 func InsertVids(vids []string, cid string) error {
 	db, err := DB()
