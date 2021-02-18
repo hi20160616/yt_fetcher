@@ -1,6 +1,7 @@
 package data
 
 import (
+	"database/sql"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -12,6 +13,7 @@ import (
 	"github.com/hi20160616/yt_fetcher/internal/biz"
 	db "github.com/hi20160616/yt_fetcher/internal/pkg/db/mysql"
 	youtube "github.com/kkdai/youtube/v2"
+	"github.com/pkg/errors"
 )
 
 var _ biz.FetcherRepo = new(fetcherRepo)
@@ -64,6 +66,26 @@ func getVidsFromSource(u *url.URL) ([]string, error) {
 	return vids, nil
 }
 
+func getCidFromSource(vid string) (string, error) {
+	video := "http://youtube.com/get_video_info?video_id=" + vid
+	u, err := url.Parse(video)
+	if err != nil {
+		return "", err
+	}
+	raw, _, err := exhtml.GetRawAndDoc(u, 1*time.Minute)
+	if err != nil {
+		return "", err
+	}
+	r, err := url.QueryUnescape(string(raw))
+	if err != nil {
+		return "", err
+	}
+	re := regexp.MustCompile(`","externalChannelId":"(.*?)","availableCountries":`)
+	rs := re.FindAllStringSubmatch(r, -1)
+	return rs[0][1], nil
+
+}
+
 // NewVideo make and return Video object with this id.
 func (fr *fetcherRepo) NewVideo(id string) (*pb.Video, error) {
 	v := &pb.Video{Vid: id}
@@ -74,6 +96,7 @@ func (fr *fetcherRepo) NewVideo(id string) (*pb.Video, error) {
 }
 
 // GetVideo get video info if it's Id is currect
+// if video info not in db, it will obtain cid by api source and others by youtube pkg
 func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 	if v.Vid == "" {
 		return nil, fmt.Errorf("GetVideo err: video id is nil, you need fr.NewVideo(id) first.")
@@ -81,18 +104,27 @@ func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 
 	_v, err := selectVideoFromDb(v.Vid)
 	if err != nil {
+		// No video in db, get from api and insert to db
+		if err = errors.Unwrap(err); errors.Is(err, sql.ErrNoRows) {
+			_v, err = getVideoFromApi(v.Vid)
+			if err != nil {
+				return nil, err
+			}
+			return _v, db.InsertVideo(_v)
+		}
 		return nil, err
 	}
 
-	if _v.Title == "" { // it means this is a new video
+	if _v.Title == "" { // maybe, this is a video only have vid and cid
 		_v, err = getVideoFromApi(v.Vid)
 		if err != nil {
 			return nil, err
 		}
-		// TODO: Insert video and cid, name to db
+		return _v, db.InsertVideo(_v)
 	}
-	v = _v
-	return v, nil
+	// v = _v
+	// return v, nil
+	return _v, nil
 }
 
 // selectVideoFromDb select * from db.yt_fetcher.videos where id = 'vid'
@@ -106,7 +138,8 @@ func selectVideoFromDb(vid string) (*pb.Video, error) {
 		Title:       v[1],
 		Description: v[2],
 		Cid:         v[3],
-		LastUpdated: v[4],
+		Cname:       v[4],
+		LastUpdated: v[5],
 	}, nil
 }
 
@@ -117,16 +150,15 @@ func getVideoFromApi(vid string) (*pb.Video, error) {
 	if err != nil {
 		return nil, err
 	}
+	cid, err := getCidFromSource(vid)
+	if err != nil {
+		return nil, err
+	}
 	t := video.Formats.FindByQuality("medium").LastModified
-	// tt, err := strconv.ParseInt(t[:10], 10, 64)
-	// if err != nil {
-	//         return nil, err
-	// }
-	// ttt := time.Unix(tt, 0)
-	// v.LastUpdated = timestamppb.New(ttt)
 	v.Title = video.Title
 	v.Description = video.Description
-	v.Cid = video.Author
+	v.Cid = cid
+	v.Cname = video.Author
 	v.LastUpdated = t
 	return v, nil
 }

@@ -26,8 +26,7 @@ mysql> use yt_fetcher;
 
 2. Create Tablese
 ```
-mysql> CREATE TABLE videos ( vid VARCHAR(11) NOT NULL, title VARCHAR(255), description VARCHAR(2000), cid VARCHAR(24), cname VARCHAR(100), last_updated VARCHAR(16), UNIQUE KEY (vid));
-mysql> describe videos;
+mysql> CREATE TABLE videos ( vid VARCHAR(11) NOT NULL, title VARCHAR(255), description TEXT(65535), cid VARCHAR(24), cname VARCHAR(100), last_updated VARCHAR(16), UNIQUE KEY (vid)); mysql> describe videos;
 +--------------+---------------+------+-----+---------+-------+
 | Field        | Type          | Null | Key | Default | Extra |
 +--------------+---------------+------+-----+---------+-------+
@@ -48,6 +47,14 @@ https://dev.mysql.com/doc/refman/8.0/en/grant.html#grant-database-privileges
 CREATE USER 'yt_fetcher'@'%' IDENTIFIED BY 'ytpassword';
 GRANT ALL ON yt_fetcher.* TO 'yt_fetcher'@'%';
 ```
+
+## SQL Conn Save
+Download enit: https://github.com/hi20160616/enit  
+Then:  
+```
+enit set yt_fetcher "yt_fetcher:ytpassword@tcp(127.0.0.1:3306)/yt_fetcher"
+```
+syntax: `[username[:password]@][protocol[(address)]]/dbname[?param1=value1&...&paramN=valueN]`
 
 
 # gRPC
@@ -81,7 +88,6 @@ quality 為影片品質，分別有：
 - large 為 480p
 - hd720 為 720p
 - hd 1080 為 1080p
-
 sig 為用作許可影片播放的「簽名」  
 
 type 為影片類型，分別有：  

@@ -8,10 +8,22 @@ import (
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 )
 
+func TestGetCidFromSource(t *testing.T) {
+	tvid := "pXV12sqXyKY"
+	got, err := getCidFromSource(tvid)
+	if err != nil {
+		t.Error(err)
+	}
+	want := "UCPDis9pjXuqyI7RYLJ-TTSA"
+	if got != want {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
 // go test -test.run=^TestGetVideo$
 func TestGetVideo(t *testing.T) {
 	fr := NewFetcherRepo()
-	v := &pb.Video{Vid: "nyfAij5B9fM"}
+	v := &pb.Video{Vid: "pXV12sqXyKY"}
 	v, err := fr.GetVideo(v)
 	if err != nil {
 		t.Fatal(err)

@@ -2,14 +2,35 @@ package mysql
 
 import (
 	"database/sql"
-	"errors"
+	"os/exec"
+	"strings"
 
 	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
+	"github.com/pkg/errors"
 )
 
 func DB() (*sql.DB, error) {
+	// [username[:password]@][protocol[(address)]]/dbname[?param1=value1&...&paramN=valueN]
+	o, err := exec.Command("enit", "get", "yt_fetcher").Output()
+	if err != nil {
+		return nil, err
+	}
+	c := strings.TrimSpace(strings.Split(string(o), "=")[1])
+	if c == "" {
+		return nil, errors.New("SQL conn string is nil")
+	}
+
+	db, err := sql.Open("mysql", string(c))
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
+// dbUnsafe deprecated due to insecurity: informations open for github
+func dbUnsafe() (*sql.DB, error) {
 	cfg := mysql.NewConfig()
 	cfg.Net = "tcp"
 	cfg.Addr = "127.0.0.1:3306"
@@ -17,9 +38,6 @@ func DB() (*sql.DB, error) {
 	cfg.Passwd = "ytpassword"
 	cfg.DBName = "yt_fetcher"
 	db, err := sql.Open("mysql", cfg.FormatDSN())
-	if err != nil {
-		return nil, err
-	}
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +54,7 @@ func QVideoByVid(vid string) ([]string, error) {
 	err = db.QueryRow("select * from videos where vid=?", vid).Scan(&vid, &title, &description, &cid, &cname, &last_updated)
 	switch {
 	case err == sql.ErrNoRows:
-		return nil, errors.New("no video with id " + vid)
+		return nil, errors.WithMessagef(err, "no video with id %s", vid)
 	case err != nil:
 		return nil, err
 	default:
