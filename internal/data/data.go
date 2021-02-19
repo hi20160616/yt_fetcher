@@ -39,6 +39,7 @@ func getVidsFromSource(cid string) ([]string, error) {
 	return vids, nil
 }
 
+// getCidFromSource get cid from youtube video api source
 func getCidFromSource(vid string) (string, error) {
 	video := "http://youtube.com/get_video_info?video_id=" + vid
 	u, err := url.Parse(video)
@@ -78,7 +79,7 @@ func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 	_v, err := selectVideoFromDb(v.Vid)
 	if err != nil {
 		// No video in db, get from api and insert to db
-		if err = errors.Unwrap(err); errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, sql.ErrNoRows) {
 			_v, err = getVideoFromApi(v.Vid)
 			if err != nil {
 				return nil, err
@@ -95,8 +96,6 @@ func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 		}
 		return _v, db.InsertVideo(_v)
 	}
-	// v = _v
-	// return v, nil
 	return _v, nil
 }
 
@@ -120,14 +119,10 @@ func selectVideoFromDb(vid string) (*pb.Video, error) {
 func getCid(vid string) (string, error) {
 	cid, err := db.QCidByVid(vid)
 	if err != nil {
-		return "", err
-	}
-
-	if cid == "" {
-		cid, err = getCidFromSource(vid)
-		if err != nil {
-			return "", err
+		if errors.Is(err, sql.ErrNoRows) {
+			return getCidFromSource(vid)
 		}
+		return "", err
 	}
 	return cid, nil
 }
@@ -135,7 +130,7 @@ func getCid(vid string) (string, error) {
 func getVideoFromApi(vid string) (*pb.Video, error) {
 	v := &pb.Video{Vid: vid}
 	client := youtube.Client{}
-	video, err := client.GetVideo(v.Vid)
+	video, err := client.GetVideo("https://www.youtube.com/watch?v=" + v.Vid)
 	if err != nil {
 		return nil, err
 	}
