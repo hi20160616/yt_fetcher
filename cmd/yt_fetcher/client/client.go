@@ -22,20 +22,20 @@ func main() {
 	defer cancel()
 
 	// get video: pass test
-	// v, err := c.GetVideo(ctx, &pb.Video{Vid: "-2u6RirE7aI"})
-	// if err != nil {
-	//         log.Printf("c.GetVideo err: %+v", err)
-	// }
-	// fmt.Println(v)
+	v, err := c.GetVideo(ctx, &pb.Video{Vid: "-2u6RirE7aI"})
+	if err != nil {
+		log.Printf("c.GetVideo err: %+v", err)
+	}
+	fmt.Println(v)
 
 	// get videos pass test
-	responses, err := c.GetVideos(ctx, &pb.Channel{Cid: "UCMUnInmOkrWN4gof9KlhNmQ"})
-	if err != nil {
-		log.Printf("c. GetVideos err: %+v", err)
-	}
-
-	videos := responses.GetVideos()
-	fmt.Println(videos)
+	// responses, err := c.GetVideos(ctx, &pb.Channel{Cid: "UCMUnInmOkrWN4gof9KlhNmQ"})
+	// if err != nil {
+	//         log.Printf("c. GetVideos err: %+v", err)
+	// }
+	//
+	// videos := responses.GetVideos()
+	// fmt.Println(videos)
 
 	// r, err := c.GetVideos(ctx, &pb.Channel{Cid: "UCMUnInmOkrWN4gof9KlhNmQ"})
 	// if err != nil {

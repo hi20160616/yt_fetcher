@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
+	db "github.com/hi20160616/yt_fetcher/internal/pkg/db/mysql"
 )
 
 func TestGetCidFromSource(t *testing.T) {
@@ -22,7 +23,11 @@ func TestGetCidFromSource(t *testing.T) {
 
 func TestGetCid(t *testing.T) {
 	ts := "pXV12sqXyKY"
-	got, err := getCid(ts)
+	dc, err := db.NewDBCase()
+	if err != nil {
+		t.Error(err)
+	}
+	got, err := getCid(dc, ts)
 	if err != nil {
 		t.Error(err)
 	}

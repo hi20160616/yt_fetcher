@@ -76,48 +76,48 @@ func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 		return nil, fmt.Errorf("GetVideo err: video id is nil, you need fr.NewVideo(id) first.")
 	}
 
-	_v, err := selectVideoFromDb(v.Vid)
+	dc, err := db.NewDBCase()
+	if err != nil {
+		return nil, err
+	}
+	defer dc.Close()
+	return getVideo(dc, v)
+}
+
+// getVideo get video info if it's Id is currect
+// if video info not in db, it will obtain cid by api source and others by youtube pkg
+func getVideo(dc *sql.DB, v *pb.Video) (*pb.Video, error) {
+	_v, err := selectVideoFromDb(dc, v.Vid)
 	if err != nil {
 		// No video in db, get from api and insert to db
 		if errors.Is(err, sql.ErrNoRows) {
-			_v, err = getVideoFromApi(v.Vid)
+			_v, err = getVideoFromApi(dc, v.Vid)
 			if err != nil {
 				return nil, err
 			}
-			return _v, db.InsertVideo(_v)
+			return _v, db.InsertOrUpdate(dc, _v)
 		}
 		return nil, err
 	}
 
 	if _v.Title == "" { // maybe, this is a video only have vid and cid
-		_v, err = getVideoFromApi(v.Vid)
+		_v, err = getVideoFromApi(dc, v.Vid)
 		if err != nil {
 			return nil, err
 		}
-		return _v, db.InsertVideo(_v)
+		return _v, db.InsertOrUpdate(dc, _v)
 	}
 	return _v, nil
 }
 
 // selectVideoFromDb select * from db.yt_fetcher.videos where id = 'vid'
-func selectVideoFromDb(vid string) (*pb.Video, error) {
-	v, err := db.QVideoByVid(vid)
-	if err != nil {
-		return nil, err
-	}
-	return &pb.Video{
-		Vid:         vid,
-		Title:       v[1],
-		Description: v[2],
-		Cid:         v[3],
-		Cname:       v[4],
-		LastUpdated: v[5],
-	}, nil
+func selectVideoFromDb(dc *sql.DB, vid string) (*pb.Video, error) {
+	return db.SelectVideo(dc, vid)
 }
 
 // getCid will get cid by vid from db first, then from source of api
-func getCid(vid string) (string, error) {
-	cid, err := db.QCidByVid(vid)
+func getCid(dc *sql.DB, vid string) (string, error) {
+	cid, err := db.SelectCid(dc, vid)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return getCidFromSource(vid)
@@ -127,14 +127,14 @@ func getCid(vid string) (string, error) {
 	return cid, nil
 }
 
-func getVideoFromApi(vid string) (*pb.Video, error) {
+func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	v := &pb.Video{Vid: vid}
 	client := youtube.Client{}
 	video, err := client.GetVideo("https://www.youtube.com/watch?v=" + v.Vid)
 	if err != nil {
 		return nil, err
 	}
-	cid, err := getCid(vid)
+	cid, err := getCid(dc, vid)
 	if err != nil {
 		return nil, err
 	}
@@ -156,22 +156,16 @@ func (fr *fetcherRepo) GetVids(c *pb.Channel) (*pb.Channel, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err = db.InsertVids(vids, cid); err != nil {
+	dc, err := db.NewDBCase()
+	if err != nil {
+		return nil, err
+	}
+	defer dc.Close()
+	if err = db.InsertVids(dc, vids, cid); err != nil {
 		return nil, err
 	}
 	c.Vids = vids
 	return c, nil
-}
-
-func (fr *fetcherRepo) videoIdsInit(c *pb.Channel) error {
-	var err error
-	if len(c.Vids) == 0 {
-		c, err = fr.GetVids(c)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 // GetVideos get and storage videos info to db by videos page of the channel
@@ -179,16 +173,22 @@ func (fr *fetcherRepo) videoIdsInit(c *pb.Channel) error {
 // 2. for range vids and get video info by vid
 // return video slice.
 func (fr *fetcherRepo) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
-	if err := fr.videoIdsInit(c); err != nil {
+	c, err := fr.GetVids(c)
+	if err != nil {
 		return nil, err
 	}
+	dc, err := db.NewDBCase()
+	if err != nil {
+		return nil, err
+	}
+	defer dc.Close()
 	videos := []*pb.Video{}
 	for _, id := range c.Vids {
 		v, err := fr.NewVideo(id)
 		if err != nil {
 			return nil, err
 		}
-		v, err = fr.GetVideo(v)
+		v, err = getVideo(dc, v)
 		if err != nil {
 			return nil, err
 		}
