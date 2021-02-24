@@ -15,8 +15,8 @@ service YoutubeFetcher{
     rpc GetVideos(Channel) returns (Videos){}
     // Get video info by videoId
     rpc GetVideo(Video) returns (Video){}
-    // Get Channel name by cid
-    rpc GetCname(Channel) returns (Channel){}
+    // Get and set channel name by cid
+    rpc GetSetCname(Channel) returns (Channel){}
     // Get Channel info by cid
     rpc GetChannel(Channel) returns (Channel){}
 }

@@ -78,6 +78,15 @@ func (s *Server) GetVideos(ctx context.Context, in *pb.Channel) (*pb.Videos, err
 	return &pb.Videos{Videos: videos}, nil
 }
 
+func (s *Server) GetSetCname(ctx context.Context, in *pb.Channel) (*pb.Channel, error) {
+	in, err := s.fc.GetSetCname(in)
+	if err != nil {
+		log.Printf("GetSetCname err: %+v", err)
+		return nil, errors.WithMessage(err, "service.Server.GetSetCname err")
+	}
+	return in, nil
+}
+
 func (s *Server) GetChannel(ctx context.Context, in *pb.Channel) (*pb.Channel, error) {
 	in, err := s.fc.GetChannel(in)
 	if err != nil {

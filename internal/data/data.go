@@ -211,14 +211,16 @@ func (fr *fetcherRepo) GetChannel(c *pb.Channel) (*pb.Channel, error) {
 	}
 	c.Vids = vids.Vids
 
+	c, err = fr.GetSetCname(c)
+
 	return db.GetChannel(dc, c)
 }
 
-func (fr *fetcherRepo) GetCname(c *pb.Channel) (*pb.Channel, error) {
+func (fr *fetcherRepo) GetSetCname(c *pb.Channel) (*pb.Channel, error) {
 	dc, err := db.NewDBCase()
 	if err != nil {
 		return nil, err
 	}
 	defer dc.Close()
-	return db.GetCname(dc, c)
+	return db.GetSetCname(dc, c)
 }

@@ -22,11 +22,20 @@ func main() {
 	defer cancel()
 
 	// get channel: pass test
-	v, err := c.GetChannel(ctx, &pb.Channel{Cid: "UCMUnInmOkrWN4gof9KlhNmQ"})
+	cid := "UCMUnInmOkrWN4gof9KlhNmQ"
+	channel := &pb.Channel{Cid: cid}
+	channel, err = c.GetSetCname(ctx, channel)
 	if err != nil {
-		log.Printf("c.GetChannel err: %+v", err)
+		log.Println(err)
 	}
-	fmt.Println(v)
+	fmt.Println(channel.Cname)
+
+	// pass test
+	// channel, err = c.GetChannel(ctx, channel)
+	// if err != nil {
+	//         log.Println(err)
+	// }
+	// fmt.Println(channel)
 
 	// get video: pass test
 	// v, err := c.GetVideo(ctx, &pb.Video{Vid: "-2u6RirE7aI"})

@@ -164,7 +164,7 @@ func InsertOrUpdate(db *sql.DB, v *pb.Video) error {
 	}
 }
 
-func GetCname(db *sql.DB, c *pb.Channel) (*pb.Channel, error) {
+func GetSetCname(db *sql.DB, c *pb.Channel) (*pb.Channel, error) {
 	if c.Cid == "" {
 		return nil, errors.New("mysql:GetCname: Query Cname from database with nil Cid")
 	}
@@ -186,7 +186,7 @@ func GetChannel(db *sql.DB, c *pb.Channel) (*pb.Channel, error) {
 		return nil, errors.New("mysql:GetCname: Query Cname from database with nil Cid")
 	}
 	var err error
-	if c, err = GetCname(db, c); err != nil {
+	if c, err = GetSetCname(db, c); err != nil {
 		return nil, err
 	}
 	if c.Vids, err = SelectVid(db, c.Cid); err != nil {
