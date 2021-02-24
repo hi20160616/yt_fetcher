@@ -1,5 +1,5 @@
 syntax = "proto3";
- 
+
 option go_package = "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api";
 option java_multiple_files = true;
 option java_package = "io.grpc.examples.routeguide";
@@ -9,28 +9,33 @@ package yt_fetcher.api;
 
 // Youtube fetch service, no need youtube api key.
 service YoutubeFetcher{
-  // Get videoIds from a youtube video list page
-  rpc GetVideoIds(Channel) returns (Channel) {}
-  // Get videos info by page url set in channel
-  rpc GetVideos(Channel) returns (Videos){}
-  // Get video info by videoId
-  rpc GetVideo(Video) returns (Video){}
+    // Get videoIds from a youtube video list page
+    rpc GetVideoIds(Channel) returns (Channel) {}
+    // Get videos info by page url set in channel
+    rpc GetVideos(Channel) returns (Videos){}
+    // Get video info by videoId
+    rpc GetVideo(Video) returns (Video){}
+    // Get Channel name by cid
+    rpc GetCname(Channel) returns (Channel){}
+    // Get Channel info by cid
+    rpc GetChannel(Channel) returns (Channel){}
 }
 
 message Channel{
-  string cid = 1; 
-  repeated string vids = 2;
+    string cid = 1; 
+    string cname = 2;
+    repeated string vids = 3;
 }
 
 message Video{
-  string vid = 1;
-  string title = 2;
-  string description = 3;
-  string cid = 4;
-  string cname = 5;
-  string last_updated = 6;
+    string vid = 1;
+    string title = 2;
+    string description = 3;
+    string cid = 4;
+    string cname = 5;
+    string last_updated = 6;
 }
 
 message Videos{
-  repeated Video videos = 1;
+    repeated Video videos = 1;
 }

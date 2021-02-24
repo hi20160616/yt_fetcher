@@ -196,3 +196,29 @@ func (fr *fetcherRepo) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
 	}
 	return videos, nil
 }
+
+func (fr *fetcherRepo) GetChannel(c *pb.Channel) (*pb.Channel, error) {
+	dc, err := db.NewDBCase()
+	if err != nil {
+		return nil, err
+	}
+	defer dc.Close()
+
+	// Get and set vids to channel
+	vids, err := fr.GetVids(c)
+	if err != nil {
+		return nil, err
+	}
+	c.Vids = vids.Vids
+
+	return db.GetChannel(dc, c)
+}
+
+func (fr *fetcherRepo) GetCname(c *pb.Channel) (*pb.Channel, error) {
+	dc, err := db.NewDBCase()
+	if err != nil {
+		return nil, err
+	}
+	defer dc.Close()
+	return db.GetCname(dc, c)
+}

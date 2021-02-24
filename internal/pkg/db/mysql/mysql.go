@@ -163,3 +163,34 @@ func InsertOrUpdate(db *sql.DB, v *pb.Video) error {
 		return Insert(db, v)
 	}
 }
+
+func GetCname(db *sql.DB, c *pb.Channel) (*pb.Channel, error) {
+	if c.Cid == "" {
+		return nil, errors.New("mysql:GetCname: Query Cname from database with nil Cid")
+	}
+	var cname sql.NullString
+	err := db.QueryRow("select cname from videos where cid=?", c.Cid).Scan(&cname)
+	switch {
+	case err == sql.ErrNoRows:
+		return nil, errors.WithMessagef(err, "no video with cid %s", c.Cid)
+	case err != nil:
+		return nil, err
+	default:
+		c.Cname = cname.String
+		return c, nil
+	}
+}
+
+func GetChannel(db *sql.DB, c *pb.Channel) (*pb.Channel, error) {
+	if c.Cid == "" {
+		return nil, errors.New("mysql:GetCname: Query Cname from database with nil Cid")
+	}
+	var err error
+	if c, err = GetCname(db, c); err != nil {
+		return nil, err
+	}
+	if c.Vids, err = SelectVid(db, c.Cid); err != nil {
+		return nil, err
+	}
+	return c, nil
+}

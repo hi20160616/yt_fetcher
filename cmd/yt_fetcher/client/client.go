@@ -21,12 +21,19 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 	defer cancel()
 
-	// get video: pass test
-	v, err := c.GetVideo(ctx, &pb.Video{Vid: "-2u6RirE7aI"})
+	// get channel: pass test
+	v, err := c.GetChannel(ctx, &pb.Channel{Cid: "UCMUnInmOkrWN4gof9KlhNmQ"})
 	if err != nil {
-		log.Printf("c.GetVideo err: %+v", err)
+		log.Printf("c.GetChannel err: %+v", err)
 	}
 	fmt.Println(v)
+
+	// get video: pass test
+	// v, err := c.GetVideo(ctx, &pb.Video{Vid: "-2u6RirE7aI"})
+	// if err != nil {
+	//         log.Printf("c.GetVideo err: %+v", err)
+	// }
+	// fmt.Println(v)
 
 	// get videos pass test
 	// responses, err := c.GetVideos(ctx, &pb.Channel{Cid: "UCMUnInmOkrWN4gof9KlhNmQ"})

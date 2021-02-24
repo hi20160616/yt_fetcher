@@ -1,7 +1,7 @@
 package biz
 
 import (
-	"errors"
+	"github.com/pkg/errors"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 )
@@ -15,6 +15,8 @@ type FetcherRepo interface {
 	GetVideo(*pb.Video) (*pb.Video, error)
 	GetVids(*pb.Channel) (*pb.Channel, error)
 	GetVideos(*pb.Channel) ([]*pb.Video, error)
+	GetCname(*pb.Channel) (*pb.Channel, error)
+	GetChannel(*pb.Channel) (*pb.Channel, error)
 }
 
 func NewFetcherCase(repo FetcherRepo) *FetcherCase {
@@ -41,9 +43,19 @@ func (fc *FetcherCase) GetVideo(v *pb.Video) (*pb.Video, error) {
 	if v.Vid == "" {
 		return nil, errors.New("fc.GetVideo err: video id is nil")
 	}
-	video, err := fc.repo.GetVideo(v)
-	if err != nil {
-		return nil, err
+	return fc.repo.GetVideo(v)
+}
+
+func (fc *FetcherCase) GetCname(c *pb.Channel) (*pb.Channel, error) {
+	if c.Cid == "" {
+		return nil, errors.New("fc.GetChannel err: cid is nil")
 	}
-	return video, nil
+	return fc.repo.GetCname(c)
+}
+
+func (fc *FetcherCase) GetChannel(c *pb.Channel) (*pb.Channel, error) {
+	if c.Cid == "" {
+		return nil, errors.New("fc.GetChannel err: cid is nil")
+	}
+	return fc.repo.GetChannel(c)
 }

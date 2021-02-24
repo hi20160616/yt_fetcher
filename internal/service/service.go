@@ -77,3 +77,12 @@ func (s *Server) GetVideos(ctx context.Context, in *pb.Channel) (*pb.Videos, err
 	log.Println("Get videos done.")
 	return &pb.Videos{Videos: videos}, nil
 }
+
+func (s *Server) GetChannel(ctx context.Context, in *pb.Channel) (*pb.Channel, error) {
+	in, err := s.fc.GetChannel(in)
+	if err != nil {
+		log.Printf("GetChannel err: %+v", err)
+		return nil, errors.WithMessage(err, "service.Server.GetChannel err")
+	}
+	return in, nil
+}
