@@ -30,19 +30,21 @@ func main() {
 	// }
 	// fmt.Println(channel.Name)
 
-	// pass test
-	// channel, err = c.GetChannel(ctx, channel)
-	// if err != nil {
-	//         log.Println(err)
-	// }
-	// fmt.Println(channel)
+	// need pass test
+	cid := "UCMUnInmOkrWN4gof9KlhNmQ"
+	channel := &pb.Channel{Id: cid}
+	channel, err = c.GetChannel(ctx, channel)
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(channel)
 
 	// get video: pass test
-	v, err := c.GetVideo(ctx, &pb.Video{Id: "-2u6RirE7aI"})
-	if err != nil {
-		log.Printf("c.GetVideo err: %+v", err)
-	}
-	fmt.Println(v)
+	// v, err := c.GetVideo(ctx, &pb.Video{Id: "-2u6RirE7aI"})
+	// if err != nil {
+	//         log.Printf("c.GetVideo err: %+v", err)
+	// }
+	// fmt.Println(v)
 
 	// get videos pass test
 	// res, err := c.GetVideos(ctx, &pb.Channel{Id: "UCMUnInmOkrWN4gof9KlhNmQ"})

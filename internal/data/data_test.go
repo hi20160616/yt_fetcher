@@ -93,7 +93,7 @@ func TestGetSetChannel(t *testing.T) {
 	fr := NewFetcherRepo()
 	c := &pb.Channel{Id: "UCMUnInmOkrWN4gof9KlhNmQ"}
 
-	if err := fr.GetSetChannel(c); err != nil {
+	if err := fr.GetChannel(c); err != nil {
 		t.Error(err)
 	}
 

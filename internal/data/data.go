@@ -222,7 +222,7 @@ func (fr *fetcherRepo) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
 
 // GetChannel query channel info
 // If nothing got from database, get video ids and channel info from source web page.
-func (fr *fetcherRepo) GetSetChannel(c *pb.Channel) error {
+func (fr *fetcherRepo) GetChannel(c *pb.Channel) error {
 	// Select name from channels
 	dc, err := db.NewDBCase()
 	if err != nil {
@@ -236,7 +236,7 @@ func (fr *fetcherRepo) GetSetChannel(c *pb.Channel) error {
 			if err := getChannelFromSource(c); err != nil {
 				return err
 			}
-			db.InsertChannel(dc, c) // storage channel info just got
+			return db.InsertChannel(dc, c) // storage channel info just got
 		}
 		return err
 	}
@@ -256,7 +256,7 @@ func (fr *fetcherRepo) GetChannelName(c *pb.Channel) error {
 			if err = getChannelFromSource(c); err != nil {
 				return err
 			}
-			db.InsertChannel(dc, c) // storage channel info just got
+			return db.InsertChannel(dc, c) // storage channel info just got
 		}
 		return err
 	}

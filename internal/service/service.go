@@ -88,7 +88,7 @@ func (s *Server) GetSetCname(ctx context.Context, in *pb.Channel) (*pb.Channel, 
 }
 
 func (s *Server) GetChannel(ctx context.Context, in *pb.Channel) (*pb.Channel, error) {
-	err := s.fc.GetSetChannel(in)
+	err := s.fc.GetChannel(in)
 	if err != nil {
 		log.Printf("GetChannel err: %+v", err)
 		return nil, errors.WithMessage(err, "service.Server.GetChannel err")
