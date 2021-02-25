@@ -23,6 +23,29 @@ func NewFetcherRepo() biz.FetcherRepo {
 	return &fetcherRepo{}
 }
 
+func getChannelFromSource(c *pb.Channel) error {
+	if c.Id == "" {
+		return errors.New("Cannot fetch info from nil channel id")
+	}
+	u, err := url.Parse("https://www.youtube.com/channel/" + c.Id + "/videos")
+	raw, _, err := exhtml.GetRawAndDoc(u, 1*time.Minute)
+	if err != nil {
+		return err
+	}
+	// get channel name
+	re := regexp.MustCompile(`<title>(.*?) - YouTube</title>`)
+	rs := re.FindAllSubmatch(raw, -1)
+	c.Name = string(rs[0][1])
+
+	// get vids
+	re = regexp.MustCompile(`"gridVideoRenderer":{"videoId":"(.*?)","thumbnail":{"thumbnails"`)
+	rs = re.FindAllSubmatch(raw, -1)
+	for _, r := range rs {
+		c.Vids = append(c.Vids, string(r[1]))
+	}
+	return nil
+}
+
 // getVidsFromSource get vids from raw html page.
 func getVidsFromSource(cid string) ([]string, error) {
 	vids := []string{}
@@ -62,8 +85,8 @@ func getCidFromSource(vid string) (string, error) {
 
 // NewVideo make and return Video object with this id.
 func (fr *fetcherRepo) NewVideo(id string) (*pb.Video, error) {
-	v := &pb.Video{Vid: id}
-	if v.Vid == "" {
+	v := &pb.Video{Id: id}
+	if v.Id == "" {
 		return nil, fmt.Errorf("NewVideo err: id is nil")
 	}
 	return v, nil
@@ -72,7 +95,7 @@ func (fr *fetcherRepo) NewVideo(id string) (*pb.Video, error) {
 // GetVideo get video info if it's Id is currect
 // if video info not in db, it will obtain cid by api source and others by youtube pkg
 func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
-	if v.Vid == "" {
+	if v.Id == "" {
 		return nil, fmt.Errorf("GetVideo err: video id is nil, you need fr.NewVideo(id) first.")
 	}
 
@@ -87,37 +110,32 @@ func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 // getVideo get video info if it's Id is currect
 // if video info not in db, it will obtain cid by api source and others by youtube pkg
 func getVideo(dc *sql.DB, v *pb.Video) (*pb.Video, error) {
-	_v, err := selectVideoFromDb(dc, v.Vid)
+	err := db.SelectVideoByVid(dc, v)
 	if err != nil {
 		// No video in db, get from api and insert to db
 		if errors.Is(err, sql.ErrNoRows) {
-			_v, err = getVideoFromApi(dc, v.Vid)
+			v, err = getVideoFromApi(dc, v.Id)
 			if err != nil {
 				return nil, err
 			}
-			return _v, db.InsertOrUpdate(dc, _v)
+			return v, db.InsertOrUpdateVideo(dc, v)
 		}
 		return nil, err
 	}
 
-	if _v.Title == "" { // maybe, this is a video only have vid and cid
-		_v, err = getVideoFromApi(dc, v.Vid)
+	if v.Title == "" { // maybe, this is a video only have vid and cid
+		v, err = getVideoFromApi(dc, v.Id)
 		if err != nil {
 			return nil, err
 		}
-		return _v, db.InsertOrUpdate(dc, _v)
+		return v, db.InsertOrUpdateVideo(dc, v)
 	}
-	return _v, nil
-}
-
-// selectVideoFromDb select * from db.yt_fetcher.videos where id = 'vid'
-func selectVideoFromDb(dc *sql.DB, vid string) (*pb.Video, error) {
-	return db.SelectVideo(dc, vid)
+	return v, nil
 }
 
 // getCid will get cid by vid from db first, then from source of api
 func getCid(dc *sql.DB, vid string) (string, error) {
-	cid, err := db.SelectCid(dc, vid)
+	cid, err := db.SelectCidByVid(dc, vid)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return getCidFromSource(vid)
@@ -127,10 +145,12 @@ func getCid(dc *sql.DB, vid string) (string, error) {
 	return cid, nil
 }
 
+// TODO: get channel id and name then insert
+// TODO: rename the function
 func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
-	v := &pb.Video{Vid: vid}
+	v := &pb.Video{Id: vid}
 	client := youtube.Client{}
-	video, err := client.GetVideo("https://www.youtube.com/watch?v=" + v.Vid)
+	video, err := client.GetVideo("https://www.youtube.com/watch?v=" + v.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +162,7 @@ func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	v.Title = video.Title
 	v.Description = video.Description
 	v.Cid = cid
-	v.Cname = video.Author
+	// v.Cname = video.Author
 	v.LastUpdated = t
 	return v, nil
 }
@@ -151,7 +171,7 @@ func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 // it will not query from db, because video page always update frequently.
 // Notice: it will storage vids and cid to db
 func (fr *fetcherRepo) GetVids(c *pb.Channel) (*pb.Channel, error) {
-	cid := c.Cid
+	cid := c.Id
 	vids, err := getVidsFromSource(cid)
 	if err != nil {
 		return nil, err
@@ -197,30 +217,38 @@ func (fr *fetcherRepo) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
 	return videos, nil
 }
 
-func (fr *fetcherRepo) GetChannel(c *pb.Channel) (*pb.Channel, error) {
+// GetChannel query channel info
+// If nothing got from database, get video ids and channel info from source web page.
+func (fr *fetcherRepo) GetSetChannel(c *pb.Channel) error {
+	// Select name from channels
 	dc, err := db.NewDBCase()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer dc.Close()
 
-	// Get and set vids to channel
-	vids, err := fr.GetVids(c)
-	if err != nil {
-		return nil, err
+	if err = db.SelectChannelByCid(dc, c); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			// Get video ids and channel info from source
+			if err := getChannelFromSource(c); err != nil {
+				return db.InsertChannel(dc, c) // storage channel info just got
+			}
+		}
+		return err
 	}
-	c.Vids = vids.Vids
-
-	c, err = fr.GetSetCname(c)
-
-	return db.GetChannel(dc, c)
+	return nil
 }
 
-func (fr *fetcherRepo) GetSetCname(c *pb.Channel) (*pb.Channel, error) {
+func (fr *fetcherRepo) GetChannelName(c *pb.Channel) error {
+	// Select name from channels
 	dc, err := db.NewDBCase()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer dc.Close()
-	return db.GetSetCname(dc, c)
+
+	if err = db.SelectChannelByCid(dc, c); err != nil {
+		return err
+	}
+	return nil
 }

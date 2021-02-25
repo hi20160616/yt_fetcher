@@ -26,18 +26,29 @@ mysql> use yt_fetcher;
 
 2. Create Tablese
 ```
-mysql> CREATE TABLE videos ( vid VARCHAR(11) NOT NULL, title VARCHAR(255), description TEXT(65535), cid VARCHAR(24), cname VARCHAR(100), last_updated VARCHAR(16), UNIQUE KEY (vid)); mysql> describe videos;
-+--------------+---------------+------+-----+---------+-------+
-| Field        | Type          | Null | Key | Default | Extra |
-+--------------+---------------+------+-----+---------+-------+
-| vid          | varchar(11)   | NO   | PRI | NULL    |       |
-| title        | varchar(255)  | YES  |     | NULL    |       |
-| description  | varchar(2000) | YES  |     | NULL    |       |
-| cid          | varchar(24)   | YES  |     | NULL    |       |
-| cname        | varchar(100)  | YES  |     | NULL    |       |
-| last_updated | varchar(16)   | YES  |     | NULL    |       |
-+--------------+---------------+------+-----+---------+-------+
-6 rows in set (0.04 sec)
+CREATE TABLE videos (id VARCHAR(11) NOT NULL, title VARCHAR(255), description TEXT(65535), cid VARCHAR(24), last_updated VARCHAR(16), UNIQUE
+KEY (id));
+mysql> describe videos;
++--------------+--------------+------+-----+---------+-------+
+| Field        | Type         | Null | Key | Default | Extra |
++--------------+--------------+------+-----+---------+-------+
+| id           | varchar(11)  | NO   | PRI | NULL    |       |
+| title        | varchar(255) | YES  |     | NULL    |       |
+| description  | mediumtext   | YES  |     | NULL    |       |
+| cid          | varchar(24)  | YES  |     | NULL    |       |
+| last_updated | varchar(16)  | YES  |     | NULL    |       |
++--------------+--------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
+mysql> CREATE TABLE channels (id VARCHAR(24) NOT NULL, name VARCHAR(255), last_updated VARCHAR(16), UNIQUE KEY (id));
+mysql> describe channels;
++--------------+--------------+------+-----+---------+-------+
+| Field        | Type         | Null | Key | Default | Extra |
++--------------+--------------+------+-----+---------+-------+
+| id           | varchar(24)  | NO   | PRI | NULL    |       |
+| name         | varchar(255) | YES  |     | NULL    |       |
+| last_updated | varchar(16)  | YES  |     | NULL    |       |
++--------------+--------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
 ```
 
 3. Create User for the database

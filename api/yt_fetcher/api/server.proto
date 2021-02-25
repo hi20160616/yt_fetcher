@@ -17,22 +17,28 @@ service YoutubeFetcher{
     rpc GetVideo(Video) returns (Video){}
     // Get and set channel name by cid
     rpc GetSetCname(Channel) returns (Channel){}
+    // Get all channels
+    rpc GetChannels(Channel) returns (Channels){}
     // Get Channel info by cid
     rpc GetChannel(Channel) returns (Channel){}
 }
 
 message Channel{
-    string cid = 1; 
-    string cname = 2;
+    string id = 1; 
+    string name = 2;
+    string last_updated = 6;
     repeated string vids = 3;
 }
 
+message Channels{
+    repeated Channel channels = 1;
+}
+
 message Video{
-    string vid = 1;
+    string id = 1;
     string title = 2;
     string description = 3;
     string cid = 4;
-    string cname = 5;
     string last_updated = 6;
 }
 

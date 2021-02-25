@@ -25,6 +25,8 @@ type YoutubeFetcherClient interface {
 	GetVideo(ctx context.Context, in *Video, opts ...grpc.CallOption) (*Video, error)
 	// Get and set channel name by cid
 	GetSetCname(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Channel, error)
+	// Get all channels
+	GetChannels(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Channels, error)
 	// Get Channel info by cid
 	GetChannel(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Channel, error)
 }
@@ -73,6 +75,15 @@ func (c *youtubeFetcherClient) GetSetCname(ctx context.Context, in *Channel, opt
 	return out, nil
 }
 
+func (c *youtubeFetcherClient) GetChannels(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Channels, error) {
+	out := new(Channels)
+	err := c.cc.Invoke(ctx, "/yt_fetcher.api.YoutubeFetcher/GetChannels", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *youtubeFetcherClient) GetChannel(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Channel, error) {
 	out := new(Channel)
 	err := c.cc.Invoke(ctx, "/yt_fetcher.api.YoutubeFetcher/GetChannel", in, out, opts...)
@@ -94,6 +105,8 @@ type YoutubeFetcherServer interface {
 	GetVideo(context.Context, *Video) (*Video, error)
 	// Get and set channel name by cid
 	GetSetCname(context.Context, *Channel) (*Channel, error)
+	// Get all channels
+	GetChannels(context.Context, *Channel) (*Channels, error)
 	// Get Channel info by cid
 	GetChannel(context.Context, *Channel) (*Channel, error)
 	mustEmbedUnimplementedYoutubeFetcherServer()
@@ -114,6 +127,9 @@ func (UnimplementedYoutubeFetcherServer) GetVideo(context.Context, *Video) (*Vid
 }
 func (UnimplementedYoutubeFetcherServer) GetSetCname(context.Context, *Channel) (*Channel, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSetCname not implemented")
+}
+func (UnimplementedYoutubeFetcherServer) GetChannels(context.Context, *Channel) (*Channels, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChannels not implemented")
 }
 func (UnimplementedYoutubeFetcherServer) GetChannel(context.Context, *Channel) (*Channel, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChannel not implemented")
@@ -203,6 +219,24 @@ func _YoutubeFetcher_GetSetCname_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _YoutubeFetcher_GetChannels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Channel)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(YoutubeFetcherServer).GetChannels(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/yt_fetcher.api.YoutubeFetcher/GetChannels",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(YoutubeFetcherServer).GetChannels(ctx, req.(*Channel))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _YoutubeFetcher_GetChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Channel)
 	if err := dec(in); err != nil {
@@ -243,6 +277,10 @@ var YoutubeFetcher_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSetCname",
 			Handler:    _YoutubeFetcher_GetSetCname_Handler,
+		},
+		{
+			MethodName: "GetChannels",
+			Handler:    _YoutubeFetcher_GetChannels_Handler,
 		},
 		{
 			MethodName: "GetChannel",

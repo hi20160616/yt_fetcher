@@ -40,7 +40,7 @@ func TestGetCid(t *testing.T) {
 // go test -test.run=^TestGetVideo$
 func TestGetVideo(t *testing.T) {
 	fr := NewFetcherRepo()
-	v := &pb.Video{Vid: "-2u6RirE7aI"}
+	v := &pb.Video{Id: "FE15vkiXuwE"}
 	v, err := fr.GetVideo(v)
 	if err != nil {
 		t.Fatal(err)
@@ -48,10 +48,23 @@ func TestGetVideo(t *testing.T) {
 	log.Println(v)
 }
 
+func TestGetVideoPrivate(t *testing.T) {
+	vid := "-2u6RirE7aI"
+	dc, err := db.NewDBCase()
+	if err != nil {
+		t.Error(err)
+	}
+	v, err := getVideo(dc, &pb.Video{Id: vid})
+	if err != nil {
+		t.Error(err)
+	}
+	log.Println(v)
+}
+
 // go test -test.run=^TestGetVideoIds$
 func TestGetVids(t *testing.T) {
 	fr := NewFetcherRepo()
-	c := &pb.Channel{Cid: "UCCtTgzGzQSWVzCG0xR7U-MQ"}
+	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ"}
 
 	c, err := fr.GetVids(c)
 	if err != nil {
@@ -67,7 +80,7 @@ func TestGetVids(t *testing.T) {
 // go test -test.run=^TestGetVideos$
 func TestGetVideos(t *testing.T) {
 	fr := NewFetcherRepo()
-	c := &pb.Channel{Cid: "UCCtTgzGzQSWVzCG0xR7U-MQ"}
+	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ"}
 
 	_, err := fr.GetVideos(c)
 	if err != nil {

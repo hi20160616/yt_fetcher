@@ -15,8 +15,8 @@ type FetcherRepo interface {
 	GetVideo(*pb.Video) (*pb.Video, error)
 	GetVids(*pb.Channel) (*pb.Channel, error)
 	GetVideos(*pb.Channel) ([]*pb.Video, error)
-	GetSetCname(*pb.Channel) (*pb.Channel, error)
-	GetChannel(*pb.Channel) (*pb.Channel, error)
+	GetChannelName(*pb.Channel) error
+	GetSetChannel(*pb.Channel) error
 }
 
 func NewFetcherCase(repo FetcherRepo) *FetcherCase {
@@ -40,22 +40,22 @@ func (fc *FetcherCase) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
 }
 
 func (fc *FetcherCase) GetVideo(v *pb.Video) (*pb.Video, error) {
-	if v.Vid == "" {
+	if v.Id == "" {
 		return nil, errors.New("fc.GetVideo err: video id is nil")
 	}
 	return fc.repo.GetVideo(v)
 }
 
-func (fc *FetcherCase) GetSetCname(c *pb.Channel) (*pb.Channel, error) {
-	if c.Cid == "" {
-		return nil, errors.New("fc.GetChannel err: cid is nil")
+func (fc *FetcherCase) GetChannelName(c *pb.Channel) error {
+	if c.Id == "" {
+		return errors.New("fc.GetChannel err: cid is nil")
 	}
-	return fc.repo.GetSetCname(c)
+	return fc.repo.GetChannelName(c)
 }
 
-func (fc *FetcherCase) GetChannel(c *pb.Channel) (*pb.Channel, error) {
-	if c.Cid == "" {
-		return nil, errors.New("fc.GetChannel err: cid is nil")
+func (fc *FetcherCase) GetSetChannel(c *pb.Channel) error {
+	if c.Id == "" {
+		return errors.New("fc.GetChannel err: cid is nil")
 	}
-	return fc.repo.GetChannel(c)
+	return fc.repo.GetSetChannel(c)
 }

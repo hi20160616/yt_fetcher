@@ -22,13 +22,13 @@ func main() {
 	defer cancel()
 
 	// get channel: pass test
-	cid := "UCMUnInmOkrWN4gof9KlhNmQ"
-	channel := &pb.Channel{Cid: cid}
-	channel, err = c.GetSetCname(ctx, channel)
-	if err != nil {
-		log.Println(err)
-	}
-	fmt.Println(channel.Cname)
+	// cid := "UCMUnInmOkrWN4gof9KlhNmQ"
+	// channel := &pb.Channel{Id: cid}
+	// channel, err = c.GetSetCname(ctx, channel)
+	// if err != nil {
+	//         log.Println(err)
+	// }
+	// fmt.Println(channel.Name)
 
 	// pass test
 	// channel, err = c.GetChannel(ctx, channel)
@@ -38,27 +38,18 @@ func main() {
 	// fmt.Println(channel)
 
 	// get video: pass test
-	// v, err := c.GetVideo(ctx, &pb.Video{Vid: "-2u6RirE7aI"})
-	// if err != nil {
-	//         log.Printf("c.GetVideo err: %+v", err)
-	// }
-	// fmt.Println(v)
+	v, err := c.GetVideo(ctx, &pb.Video{Id: "-2u6RirE7aI"})
+	if err != nil {
+		log.Printf("c.GetVideo err: %+v", err)
+	}
+	fmt.Println(v)
 
 	// get videos pass test
-	// responses, err := c.GetVideos(ctx, &pb.Channel{Cid: "UCMUnInmOkrWN4gof9KlhNmQ"})
+	// res, err := c.GetVideos(ctx, &pb.Channel{Id: "UCMUnInmOkrWN4gof9KlhNmQ"})
 	// if err != nil {
 	//         log.Printf("c. GetVideos err: %+v", err)
 	// }
 	//
-	// videos := responses.GetVideos()
+	// videos := res.GetVideos()
 	// fmt.Println(videos)
-
-	// r, err := c.GetVideos(ctx, &pb.Channel{Cid: "UCMUnInmOkrWN4gof9KlhNmQ"})
-	// if err != nil {
-	//         log.Fatalf("could not get videos: %v", err)
-	// }
-	// fmt.Println(r.Videos)
-	// for _, e := range r.Videos {
-	//         fmt.Println(e.Title)
-	// }
 }
