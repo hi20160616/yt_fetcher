@@ -2,6 +2,8 @@ package mysql
 
 import (
 	"database/sql"
+	"strconv"
+	"time"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 	"github.com/pkg/errors"
@@ -32,6 +34,7 @@ func InsertChannel(db *sql.DB, c *pb.Channel) error {
 		return err
 	}
 	defer stmtIns.Close()
+	c.LastUpdated = strconv.FormatInt(time.Now().UnixNano(), 10)[:16]
 	if _, err = stmtIns.Exec(c.Id, c.Name, c.LastUpdated); err != nil {
 		return err
 	}
@@ -47,6 +50,7 @@ func UpdateChannel(db *sql.DB, c *pb.Channel) error {
 		return err
 	}
 	defer stmt.Close()
+	c.LastUpdated = strconv.FormatInt(time.Now().UnixNano(), 10)[:16]
 	if _, err := stmt.Exec(c.Name, c.LastUpdated, c.Id); err != nil {
 		return err
 	}

@@ -88,3 +88,28 @@ func TestGetVideos(t *testing.T) {
 	}
 	// log.Println(v)
 }
+
+func TestGetSetChannel(t *testing.T) {
+	fr := NewFetcherRepo()
+	c := &pb.Channel{Id: "UCMUnInmOkrWN4gof9KlhNmQ"}
+
+	if err := fr.GetSetChannel(c); err != nil {
+		t.Error(err)
+	}
+
+	if c.Name != "Mr & Mrs Gao" {
+		t.Errorf("got: %v", c.Name)
+	}
+}
+
+func TestGetChannelFromSource(t *testing.T) {
+	c := &pb.Channel{Id: "UCMUnInmOkrWN4gof9KlhNmQ"}
+
+	if err := getChannelFromSource(c); err != nil {
+		t.Error(err)
+	}
+
+	if c.Name != "Mr & Mrs Gao" {
+		t.Errorf("got: %v", c.Name)
+	}
+}

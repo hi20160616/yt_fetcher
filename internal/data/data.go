@@ -3,6 +3,7 @@ package data
 import (
 	"database/sql"
 	"fmt"
+	"html"
 	"net/url"
 	"regexp"
 	"time"
@@ -27,16 +28,18 @@ func getChannelFromSource(c *pb.Channel) error {
 	if c.Id == "" {
 		return errors.New("Cannot fetch info from nil channel id")
 	}
+	// https://www.youtube.com/channel/UCMUnInmOkrWN4gof9KlhNmQ/videos
 	u, err := url.Parse("https://www.youtube.com/channel/" + c.Id + "/videos")
 	raw, _, err := exhtml.GetRawAndDoc(u, 1*time.Minute)
 	if err != nil {
 		return err
 	}
 	// get channel name
-	re := regexp.MustCompile(`<title>(.*?) - YouTube</title>`)
+	// c.Name = exhtml.ElementsByTag(doc, "title")[0].FirstChild.Data
+	// c.Name = strings.Replace(c.Name, " - YouTube", "", -1)
+	re := regexp.MustCompile(`<title>(.*) - YouTube</title>`)
 	rs := re.FindAllSubmatch(raw, -1)
-	c.Name = string(rs[0][1])
-
+	c.Name = html.UnescapeString(string(rs[0][1]))
 	// get vids
 	re = regexp.MustCompile(`"gridVideoRenderer":{"videoId":"(.*?)","thumbnail":{"thumbnails"`)
 	rs = re.FindAllSubmatch(raw, -1)
@@ -231,8 +234,9 @@ func (fr *fetcherRepo) GetSetChannel(c *pb.Channel) error {
 		if errors.Is(err, sql.ErrNoRows) {
 			// Get video ids and channel info from source
 			if err := getChannelFromSource(c); err != nil {
-				return db.InsertChannel(dc, c) // storage channel info just got
+				return err
 			}
+			db.InsertChannel(dc, c) // storage channel info just got
 		}
 		return err
 	}
@@ -248,6 +252,12 @@ func (fr *fetcherRepo) GetChannelName(c *pb.Channel) error {
 	defer dc.Close()
 
 	if err = db.SelectChannelByCid(dc, c); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			if err = getChannelFromSource(c); err != nil {
+				return err
+			}
+			db.InsertChannel(dc, c) // storage channel info just got
+		}
 		return err
 	}
 	return nil
