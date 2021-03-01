@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
@@ -37,11 +38,20 @@ func TestSelectVideo(t *testing.T) {
 	}
 	defer db.Close()
 
-	v := &pb.Video{Id: "5TW7ALXdlw8"}
-	if err := SelectVideoByVid(db, v); err != nil {
+	got := &pb.Video{Id: "5TW7ALXdlw8"}
+	if err := SelectVideoByVid(db, got); err != nil {
 		t.Errorf("err: %+v", err)
-	} else {
-		fmt.Println(v)
+	}
+	want := &pb.Video{
+		Id:          "5TW7ALXdlw8",
+		Title:       "專給最勇敢警探的10道神秘謎題2",
+		Description: "test for description 2",
+		Cid:         "UCCtTgzGzQSWVzCG0xR7U-MQ",
+		Cname:       "亮生活 / Bright Side",
+		LastUpdated: "1612601612245194",
+	}
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("got: %v, want: %v", got, want)
 	}
 
 }
@@ -129,13 +139,14 @@ func TestInsertOrUpdateVideo(t *testing.T) {
 	}
 }
 
-func TestSelectVid(t *testing.T) {
+// test via review the output
+func TestSelectVidsByCid(t *testing.T) {
 	db, err := NewDBCase()
 	if err != nil {
 		t.Error(err)
 	}
 	defer db.Close()
-	if vs, err := SelectVid(db, "UCCtTgzGzQSWVzCG0xR7U-MQ"); err != nil {
+	if vs, err := SelectVidsByCid(db, "UCCtTgzGzQSWVzCG0xR7U-MQ"); err != nil {
 		t.Errorf("err: %+v", err)
 	} else {
 		for _, v := range vs {

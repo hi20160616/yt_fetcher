@@ -40,22 +40,24 @@ func SelectVideosByCid(db *sql.DB, channelId string) ([]*pb.Video, error) {
 func SelectVideoByVid(db *sql.DB, v *pb.Video) error {
 	var title, description, cid, cname, last_updated sql.NullString
 	// err := db.QueryRow("select * from videos where id=?", v.Id).Scan(&v.Id, &title, &description, &cid, &last_updated)
-	err := db.QueryRow("SELECT v.id, v.title, v.cid, c.name AS cname FROM videos AS v LEFT JOIN channels AS c on v.cid=c.id WHERE v.id='?';", v.Id).Scan(&v.Id, &title, &description, &cid, &cname, &last_updated)
+	err := db.QueryRow("SELECT v.id, v.title, v.description, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid=c.id WHERE v.id=?;", v.Id).Scan(&v.Id, &title, &description, &cid, &cname, &last_updated)
 	switch {
 	case err == sql.ErrNoRows:
 		return errors.WithMessagef(err, "no video with id %s", v.Id)
 	case err != nil:
-		return err
+		return errors.WithMessage(err, "SelectVideoByVid QueryRow error")
 	default:
 		v.Title = title.String
 		v.Description = description.String
+		v.Cid = cid.String
+		v.Cname = cname.String
 		v.LastUpdated = last_updated.String
 		return nil
 	}
 }
 
-// SelectVid select video id list from videos by channel id
-func SelectVid(db *sql.DB, cid string) ([]string, error) {
+// SelectVidsByCid select video id list from videos by channel id
+func SelectVidsByCid(db *sql.DB, cid string) ([]string, error) {
 	rows, err := db.Query("select id from videos where cid=?", cid)
 	if err != nil {
 		return nil, err
@@ -123,11 +125,11 @@ func UpdateVideo(db *sql.DB, v *pb.Video) error {
 	}
 	stmt, err := db.Prepare("UPDATE videos SET title=?, description=?, cid=?, last_updated=? WHERE id=?")
 	if err != nil {
-		return err
+		return errors.WithMessage(err, "UpdateVideo stmt Prepare error")
 	}
 	defer stmt.Close()
 	if _, err := stmt.Exec(v.Title, v.Description, v.Cid, v.LastUpdated, v.Id); err != nil {
-		return err
+		return errors.WithMessage(err, "UpdateVideo stmt Exec error")
 	}
 	return nil
 }
@@ -137,12 +139,12 @@ func UpdateVideo(db *sql.DB, v *pb.Video) error {
 func InsertVideo(db *sql.DB, v *pb.Video) error {
 	stmt, err := db.Prepare("insert into videos(id, title, description, cid, last_updated) values(?,?,?,?,?)")
 	if err != nil {
-		return err
+		return errors.WithMessage(err, "InsertVideo stmt Prepare error")
 	}
 	defer stmt.Close()
 
 	if _, err = stmt.Exec(v.Id, v.Title, v.Description, v.Cid, v.LastUpdated); err != nil {
-		return err
+		return errors.WithMessage(err, "InsertVideo stmt Exec error")
 	}
 	return nil
 }
@@ -150,7 +152,7 @@ func InsertVideo(db *sql.DB, v *pb.Video) error {
 func vidExist(db *sql.DB, vid string) (bool, error) {
 	rows, err := db.Query("SELECT * FROM videos WHERE id=?", vid)
 	if err != nil {
-		return false, err
+		return false, errors.WithMessage(err, "vidExist Query error")
 	}
 	defer rows.Close()
 	return rows.Next(), nil
@@ -159,12 +161,12 @@ func vidExist(db *sql.DB, vid string) (bool, error) {
 // InsertOrUpdateVideo determine vid exist first, if exist, update or else insert v to db.
 func InsertOrUpdateVideo(db *sql.DB, v *pb.Video) error {
 	if v.Id == "" {
-		return errors.New("provide nil vid")
+		return errors.New("provide nil videoId")
 	}
 
 	exist, err := vidExist(db, v.Id)
 	if err != nil {
-		return err
+		return errors.WithMessage(err, "InsertOrUpdateVideo vidExist error")
 	}
 	if exist {
 		return UpdateVideo(db, v)
