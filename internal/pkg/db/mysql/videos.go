@@ -7,10 +7,40 @@ import (
 	"github.com/pkg/errors"
 )
 
+func SelectVideosByCid(db *sql.DB, channelId string) ([]*pb.Video, error) {
+	var id, title, description, cid, cname, last_updated sql.NullString
+
+	rows, err := db.Query("SELECT v.id, v.title, v.description, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid=c.id WHERE c.id=?;", channelId)
+	if err != nil {
+		return nil, errors.WithMessage(err, "SelectVideosByCid query error")
+	}
+	defer rows.Close()
+
+	videos := make([]*pb.Video, 0)
+	for rows.Next() {
+		if err := rows.Scan(&id, &title, &description, &cid, &cname, &last_updated); err != nil {
+			return nil, errors.WithMessage(err, "SelectVideosByCid rows.Scan error")
+		}
+		videos = append(videos, &pb.Video{Id: id.String,
+			Title:       title.String,
+			Description: description.String,
+			Cid:         cid.String,
+			Cname:       cname.String,
+			LastUpdated: last_updated.String,
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, errors.WithMessage(err, "SelectVideosByCid rows error")
+	}
+	return videos, nil
+}
+
 // SelectVideoById select video from videos by video id
 func SelectVideoByVid(db *sql.DB, v *pb.Video) error {
-	var title, description, cid, last_updated sql.NullString
-	err := db.QueryRow("select * from videos where id=?", v.Id).Scan(&v.Id, &title, &description, &cid, &last_updated)
+	var title, description, cid, cname, last_updated sql.NullString
+	// err := db.QueryRow("select * from videos where id=?", v.Id).Scan(&v.Id, &title, &description, &cid, &last_updated)
+	err := db.QueryRow("SELECT v.id, v.title, v.cid, c.name AS cname FROM videos AS v LEFT JOIN channels AS c on v.cid=c.id WHERE v.id='?';", v.Id).Scan(&v.Id, &title, &description, &cid, &cname, &last_updated)
 	switch {
 	case err == sql.ErrNoRows:
 		return errors.WithMessagef(err, "no video with id %s", v.Id)

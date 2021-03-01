@@ -7,6 +7,29 @@ import (
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 )
 
+func TestSelectVideosByCid(t *testing.T) {
+	db, err := NewDBCase()
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+
+	cid := "UCMUnInmOkrWN4gof9KlhNmQ"
+	vs, err := SelectVideosByCid(db, cid)
+	if err != nil {
+		t.Error(err)
+	}
+	flag := false
+	for _, v := range vs {
+		if v.Title == "目前最火的一期，消失的同學，不是平行宇宙也不是曼德拉效應，而是〇〇 | 老高與小茉 Mr & Mrs Gao" {
+			flag = true
+		}
+	}
+	if !flag {
+		t.Errorf("want: true, got false")
+	}
+}
+
 func TestSelectVideo(t *testing.T) {
 	db, err := NewDBCase()
 	if err != nil {
@@ -119,63 +142,4 @@ func TestSelectVid(t *testing.T) {
 			fmt.Println(v)
 		}
 	}
-}
-
-func TestInsertChannel(t *testing.T) {
-	db, err := NewDBCase()
-	if err != nil {
-		t.Error(err)
-	}
-	defer db.Close()
-
-	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ", Name: "亮生活 / Bright Side"}
-	if err = InsertChannel(db, c); err != nil {
-		t.Errorf("err: %+v", err)
-	}
-	cc := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ"}
-	if err := SelectChannelByCid(db, cc); err != nil {
-		t.Errorf("err: %+v", err)
-	} else {
-		if cc.Name != "亮生活 / Bright Side" {
-			t.Errorf("got: %s", c.Name)
-		}
-	}
-}
-
-func TestSelectChannelName(t *testing.T) {
-	db, err := NewDBCase()
-	if err != nil {
-		t.Error(err)
-	}
-	defer db.Close()
-	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ"}
-	if err := SelectChannelByCid(db, c); err != nil {
-		t.Errorf("err: %+v", err)
-	} else {
-		if c.Name != "亮生活 / Bright Side" {
-			t.Errorf("got: %s", c.Name)
-		}
-	}
-}
-
-func TestInsertOrUpdateChannel(t *testing.T) {
-	db, err := NewDBCase()
-	if err != nil {
-		t.Error(err)
-	}
-	defer db.Close()
-
-	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ", Name: "亮生活 / Bright Side"}
-	if err = InsertOrUpdateChannel(db, c); err != nil {
-		t.Errorf("err: %+v", err)
-	}
-	cc := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ"}
-	if err := SelectChannelByCid(db, cc); err != nil {
-		t.Errorf("err: %+v", err)
-	} else {
-		if cc.Name != "亮生活 / Bright Side" {
-			t.Errorf("got: %s", c.Name)
-		}
-	}
-
 }
