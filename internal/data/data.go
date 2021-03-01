@@ -25,8 +25,8 @@ func NewFetcherRepo() biz.FetcherRepo {
 }
 
 func getChannelFromSource(c *pb.Channel) error {
-	if c.Id == "" {
-		return errors.New("Cannot fetch info from nil channel id")
+	if c.Id == "" || c.Id == "cid" {
+		return errors.New("nil or wrong channel id: " + c.Id)
 	}
 	// https://www.youtube.com/channel/UCMUnInmOkrWN4gof9KlhNmQ/videos
 	u, err := url.Parse("https://www.youtube.com/channel/" + c.Id + "/videos")
@@ -39,10 +39,16 @@ func getChannelFromSource(c *pb.Channel) error {
 	// c.Name = strings.Replace(c.Name, " - YouTube", "", -1)
 	re := regexp.MustCompile(`<title>(.*) - YouTube</title>`)
 	rs := re.FindAllSubmatch(raw, -1)
+	if len(rs) == 0 {
+		return errors.New("getChannelFromSource get channel name match nothing:" + c.Id)
+	}
 	c.Name = html.UnescapeString(string(rs[0][1]))
 	// get vids
 	re = regexp.MustCompile(`"gridVideoRenderer":{"videoId":"(.*?)","thumbnail":{"thumbnails"`)
 	rs = re.FindAllSubmatch(raw, -1)
+	if len(rs) == 0 {
+		return errors.New("getChannelFromSource get vids match nothing")
+	}
 	for _, r := range rs {
 		c.Vids = append(c.Vids, string(r[1]))
 	}
