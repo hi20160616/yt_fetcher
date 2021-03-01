@@ -118,6 +118,7 @@ func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 
 // getVideo get video info if it's Id is currect
 // if video info not in db, it will obtain cid by api source and others by youtube pkg
+// then INSERT OR UPDATE TABLES: videos and channels.
 func getVideo(dc *sql.DB, v *pb.Video) (*pb.Video, error) {
 	err := db.SelectVideoByVid(dc, v)
 	if err != nil {
@@ -127,7 +128,7 @@ func getVideo(dc *sql.DB, v *pb.Video) (*pb.Video, error) {
 			if err != nil {
 				return nil, err
 			}
-			return v, db.InsertOrUpdateVideo(dc, v)
+			return v, db.InsertOrUpdateVC(dc, v)
 		}
 		return nil, err
 	}
@@ -137,7 +138,7 @@ func getVideo(dc *sql.DB, v *pb.Video) (*pb.Video, error) {
 		if err != nil {
 			return nil, err
 		}
-		return v, db.InsertOrUpdateVideo(dc, v)
+		return v, db.InsertOrUpdateVC(dc, v)
 	}
 	return v, nil
 }
@@ -171,7 +172,7 @@ func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	v.Title = video.Title
 	v.Description = video.Description
 	v.Cid = cid
-	// v.Cname = video.Author
+	v.Cname = video.Author
 	v.LastUpdated = t
 	return v, nil
 }
@@ -200,6 +201,7 @@ func (fr *fetcherRepo) GetVids(c *pb.Channel) (*pb.Channel, error) {
 // GetVideos get and storage videos info to db by videos page of the channel
 // 1. get vids from videos page every request.
 // 2. for range vids and get video info by vid
+// 3. insert or update tables: videos and channels
 // return video slice.
 func (fr *fetcherRepo) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
 	c, err := fr.GetVids(c)

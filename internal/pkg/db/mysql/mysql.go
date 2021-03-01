@@ -28,6 +28,7 @@ func NewDBCase() (*sql.DB, error) {
 	return db, nil
 }
 
+// InsertOrUpdate determine if vid or cid exist in db, else update or insert to db.
 func InsertOrUpdate(db *sql.DB, v *pb.Video, c *pb.Channel) error {
 	if v.Id == "" {
 		return errors.New("provide nil vid")
@@ -53,5 +54,36 @@ func InsertOrUpdate(db *sql.DB, v *pb.Video, c *pb.Channel) error {
 	} else {
 		err = InsertChannel(db, c)
 	}
-	return nil
+	return err
+}
+
+// InsertOrUpdateVC determine if vid or cid exist in db, else update or insert to db.
+// NOTICE: this funciton will insert and update videos and channels tables in db.
+// NOTICE: this function should invoke after v was populated completely.
+func InsertOrUpdateVC(db *sql.DB, v *pb.Video) error {
+	if v.Id == "" {
+		return errors.New("provide nil vid")
+	}
+
+	vExist, err := vidExist(db, v.Id)
+	if err != nil {
+		return err
+	}
+	cExist, err := cidExist(db, v.Cid)
+	if err != nil {
+		return err
+	}
+
+	if vExist {
+		err = UpdateVideo(db, v)
+	} else {
+		err = InsertVideo(db, v)
+	}
+
+	if cExist {
+		err = UpdateChannel(db, &pb.Channel{Id: v.Cid, Name: v.Cname})
+	} else {
+		err = InsertChannel(db, &pb.Channel{Id: v.Cid, Name: v.Cname})
+	}
+	return err
 }

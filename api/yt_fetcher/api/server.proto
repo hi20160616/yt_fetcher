@@ -26,8 +26,8 @@ service YoutubeFetcher{
 message Channel{
     string id = 1; 
     string name = 2;
-    string last_updated = 6;
-    repeated string vids = 3;
+    string last_updated = 3;
+    repeated string vids = 4;
 }
 
 message Channels{
@@ -39,6 +39,7 @@ message Video{
     string title = 2;
     string description = 3;
     string cid = 4;
+    string cname = 5;
     string last_updated = 6;
 }
 
