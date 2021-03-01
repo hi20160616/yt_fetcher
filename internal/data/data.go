@@ -162,17 +162,18 @@ func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	client := youtube.Client{}
 	video, err := client.GetVideo("https://www.youtube.com/watch?v=" + v.Id)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithMessage(err, "getVideoFromApi error")
 	}
 	cid, err := getCid(dc, vid)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithMessage(err, "getVideoFromApi error")
 	}
 	t := video.Formats.FindByQuality("medium").LastModified
 	v.Title = video.Title
 	v.Description = video.Description
 	v.Cid = cid
 	v.Cname = video.Author
+	// v.Duration = video.Duration.String()
 	v.LastUpdated = t
 	return v, nil
 }

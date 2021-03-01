@@ -37,6 +37,19 @@ func TestGetCid(t *testing.T) {
 	}
 }
 
+func TestGetVideoFromApi(t *testing.T) {
+	vid := "FE15vkiXuwE"
+	dc, err := db.NewDBCase()
+	if err != nil {
+		t.Error(err)
+	}
+	got, err := getVideoFromApi(dc, vid)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(got.Title)
+}
+
 // go test -test.run=^TestGetVideo$
 func TestGetVideo(t *testing.T) {
 	fr := NewFetcherRepo()
