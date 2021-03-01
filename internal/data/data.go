@@ -171,9 +171,9 @@ func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	t := video.Formats.FindByQuality("medium").LastModified
 	v.Title = video.Title
 	v.Description = video.Description
+	v.Duration = video.Duration.String()
 	v.Cid = cid
 	v.Cname = video.Author
-	// v.Duration = video.Duration.String()
 	v.LastUpdated = t
 	return v, nil
 }

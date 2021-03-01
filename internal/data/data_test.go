@@ -39,6 +39,7 @@ func TestGetCid(t *testing.T) {
 
 func TestGetVideoFromApi(t *testing.T) {
 	vid := "FE15vkiXuwE"
+	want := "四千億隻蝗蟲哪去了？這可能就是人類的結局 | 老高與小茉 Mr & Mrs Gao"
 	dc, err := db.NewDBCase()
 	if err != nil {
 		t.Error(err)
@@ -48,6 +49,9 @@ func TestGetVideoFromApi(t *testing.T) {
 		t.Error(err)
 	}
 	fmt.Println(got.Title)
+	if got.Title != want {
+		t.Errorf("got %v, want %v", got.Title, want)
+	}
 }
 
 // go test -test.run=^TestGetVideo$
@@ -62,7 +66,7 @@ func TestGetVideo(t *testing.T) {
 }
 
 func TestGetVideoPrivate(t *testing.T) {
-	vid := "-2u6RirE7aI"
+	vid := "NHgXDqU-ihM"
 	dc, err := db.NewDBCase()
 	if err != nil {
 		t.Error(err)
@@ -95,11 +99,13 @@ func TestGetVideos(t *testing.T) {
 	fr := NewFetcherRepo()
 	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ"}
 
-	_, err := fr.GetVideos(c)
+	got, err := fr.GetVideos(c)
 	if err != nil {
 		t.Fatal(err)
 	}
-	// log.Println(v)
+	for i, video := range got {
+		fmt.Println(i, ":", video.Title)
+	}
 }
 
 func TestGetSetChannel(t *testing.T) {
@@ -110,7 +116,7 @@ func TestGetSetChannel(t *testing.T) {
 		t.Error(err)
 	}
 
-	if c.Name != "Mr & Mrs Gao" {
+	if c.Name != "老高與小茉 Mr & Mrs Gao" {
 		t.Errorf("got: %v", c.Name)
 	}
 }

@@ -26,8 +26,8 @@ mysql> use yt_fetcher;
 
 2. Create Tablese
 ```
-CREATE TABLE videos (id VARCHAR(11) NOT NULL, title VARCHAR(255), description TEXT(65535), cid VARCHAR(24), last_updated VARCHAR(16), UNIQUE
-KEY (id));
+mysql> DROP TABLE videos;
+mysql> CREATE TABLE videos (id VARCHAR(11) NOT NULL, title VARCHAR(255), description TEXT(65535), duration VARCHAR(20), cid VARCHAR(24), last_updated VARCHAR(16), UNIQUE KEY (id));
 mysql> describe videos;
 +--------------+--------------+------+-----+---------+-------+
 | Field        | Type         | Null | Key | Default | Extra |
@@ -35,10 +35,12 @@ mysql> describe videos;
 | id           | varchar(11)  | NO   | PRI | NULL    |       |
 | title        | varchar(255) | YES  |     | NULL    |       |
 | description  | mediumtext   | YES  |     | NULL    |       |
+| duration     | varchar(20)  | YES  |     | NULL    |       |
 | cid          | varchar(24)  | YES  |     | NULL    |       |
 | last_updated | varchar(16)  | YES  |     | NULL    |       |
 +--------------+--------------+------+-----+---------+-------+
-5 rows in set (0.00 sec)
+6 rows in set (0.01 sec)
+mysql> DROP TABLE channels;
 mysql> CREATE TABLE channels (id VARCHAR(24) NOT NULL, name VARCHAR(255), last_updated VARCHAR(16), UNIQUE KEY (id));
 mysql> describe channels;
 +--------------+--------------+------+-----+---------+-------+

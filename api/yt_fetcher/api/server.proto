@@ -38,9 +38,10 @@ message Video{
     string id = 1;
     string title = 2;
     string description = 3;
-    string cid = 4;
-    string cname = 5;
-    string last_updated = 6;
+    string duration = 4;
+    string cid = 5;
+    string cname = 6;
+    string last_updated = 7;
 }
 
 message Videos{
