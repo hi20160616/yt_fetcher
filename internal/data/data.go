@@ -271,3 +271,13 @@ func (fr *fetcherRepo) GetChannelName(c *pb.Channel) error {
 	}
 	return nil
 }
+
+func (fr *fetcherRepo) GetChannels(cs *pb.Channels) (*pb.Channels, error) {
+	dc, err := db.NewDBCase()
+	if err != nil {
+		return nil, err
+	}
+	defer dc.Close()
+
+	return db.SelectChannels(dc, cs)
+}

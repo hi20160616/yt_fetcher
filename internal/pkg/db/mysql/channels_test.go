@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"fmt"
 	"testing"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
@@ -40,6 +41,19 @@ func TestSelectChannelName(t *testing.T) {
 		if c.Name != "亮生活 / Bright Side" {
 			t.Errorf("got: %s", c.Name)
 		}
+	}
+}
+
+func TestSelectChannels(t *testing.T) {
+	db, err := NewDBCase()
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+	cs := &pb.Channels{}
+	got, err := SelectChannels(db, cs)
+	for _, c := range got.Channels {
+		fmt.Println(c)
 	}
 }
 

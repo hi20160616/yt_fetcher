@@ -95,3 +95,12 @@ func (s *Server) GetChannel(ctx context.Context, in *pb.Channel) (*pb.Channel, e
 	}
 	return in, nil
 }
+
+func (s *Server) GetChannels(ctx context.Context, in *pb.Channels) (*pb.Channels, error) {
+	in, err := s.fc.GetChannels(in)
+	if err != nil {
+		log.Printf("GetChannels err: %+v", err)
+		return nil, errors.WithMessage(err, "service.Server.GetChannels err")
+	}
+	return in, nil
+}

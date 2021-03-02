@@ -17,6 +17,7 @@ type FetcherRepo interface {
 	GetVideos(*pb.Channel) ([]*pb.Video, error)
 	GetChannelName(*pb.Channel) error
 	GetChannel(*pb.Channel) error
+	GetChannels(*pb.Channels) (*pb.Channels, error)
 }
 
 func NewFetcherCase(repo FetcherRepo) *FetcherCase {
@@ -58,4 +59,8 @@ func (fc *FetcherCase) GetChannel(c *pb.Channel) error {
 		return errors.New("fc.GetChannel err: cid is nil")
 	}
 	return fc.repo.GetChannel(c)
+}
+
+func (fc *FetcherCase) GetChannels(cs *pb.Channels) (*pb.Channels, error) {
+	return fc.repo.GetChannels(cs)
 }

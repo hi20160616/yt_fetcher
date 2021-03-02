@@ -18,7 +18,7 @@ service YoutubeFetcher{
     // Get and set channel name by cid
     rpc GetSetCname(Channel) returns (Channel){}
     // Get all channels
-    rpc GetChannels(Channel) returns (Channels){}
+    rpc GetChannels(Channels) returns (Channels){}
     // Get Channel info by cid
     rpc GetChannel(Channel) returns (Channel){}
 }

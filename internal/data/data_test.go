@@ -132,3 +132,16 @@ func TestGetChannelFromSource(t *testing.T) {
 		t.Errorf("got: %v", c.Name)
 	}
 }
+
+func TestGetChannels(t *testing.T) {
+	fr := NewFetcherRepo()
+	cs := &pb.Channels{}
+
+	if got, err := fr.GetChannels(cs); err != nil {
+		t.Error(err)
+	} else {
+		for _, c := range got.Channels {
+			fmt.Println(c)
+		}
+	}
+}

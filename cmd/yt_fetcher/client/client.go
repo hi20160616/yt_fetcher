@@ -47,11 +47,21 @@ func main() {
 	// fmt.Println(v)
 
 	// get videos pass test
-	res, err := c.GetVideos(ctx, &pb.Channel{Id: "UCMUnInmOkrWN4gof9KlhNmQ"})
-	if err != nil {
-		log.Printf("c. GetVideos err: %+v", err)
-	}
+	// res, err := c.GetVideos(ctx, &pb.Channel{Id: "UCMUnInmOkrWN4gof9KlhNmQ"})
+	// if err != nil {
+	//         log.Printf("c. GetVideos err: %+v", err)
+	// }
+	//
+	// videos := res.GetVideos()
+	// fmt.Println(videos)
 
-	videos := res.GetVideos()
-	fmt.Println(videos)
+	// get channels
+	cs := &pb.Channels{}
+	res, err := c.GetChannels(ctx, cs)
+	if err != nil {
+		log.Println(err)
+	}
+	for _, c := range res.Channels {
+		fmt.Println(c)
+	}
 }

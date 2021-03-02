@@ -28,6 +28,26 @@ func SelectChannelByCid(db *sql.DB, c *pb.Channel) error {
 	}
 }
 
+func SelectChannels(db *sql.DB, cs *pb.Channels) (*pb.Channels, error) {
+	rows, err := db.Query("SELECT * FROM channels")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id, name, last_updated sql.NullString
+		if err := rows.Scan(&id, &name, &last_updated); err != nil {
+			return nil, err
+		}
+		cs.Channels = append(cs.Channels, &pb.Channel{
+			Id:          id.String,
+			Name:        name.String,
+			LastUpdated: last_updated.String})
+	}
+	return cs, nil
+}
+
 func InsertChannel(db *sql.DB, c *pb.Channel) error {
 	stmt, err := db.Prepare("INSERT INTO channels (id, name, last_updated) values(?,?,?)")
 	if err != nil {
