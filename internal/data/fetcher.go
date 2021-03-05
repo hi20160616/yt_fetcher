@@ -13,6 +13,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+func GetChannelFromSource(c *pb.Channel) error {
+	return getChannelFromSource(c)
+}
+
 func getChannelFromSource(c *pb.Channel) error {
 	if c.Id == "" || c.Id == "cid" {
 		return errors.New("nil or wrong channel id: " + c.Id)

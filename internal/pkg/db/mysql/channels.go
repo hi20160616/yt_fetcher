@@ -103,3 +103,20 @@ func InsertOrUpdateChannel(db *sql.DB, c *pb.Channel) error {
 	}
 
 }
+
+func DelChannel(db *sql.DB, c *pb.Channel) error {
+	if c.Id == "" {
+		return errors.New("Provide nil channel id")
+	}
+
+	exist, err := cidExist(db, c.Id)
+	if err != nil {
+		return err
+	}
+
+	if exist {
+		row := db.QueryRow("DELETE FROM channels WHERE id = ?", c.Id)
+		return row.Err()
+	}
+	return errors.New("DelChannel error")
+}

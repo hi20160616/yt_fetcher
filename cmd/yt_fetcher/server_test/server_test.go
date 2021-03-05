@@ -22,13 +22,13 @@ func main() {
 	defer cancel()
 
 	// get channel name: pass test
-	// cid := "UCMUnInmOkrWN4gof9KlhNmQ"
-	// channel := &pb.Channel{Id: cid}
-	// channel, err = c.GetSetCname(ctx, channel)
-	// if err != nil {
-	//         log.Println(err)
-	// }
-	// fmt.Println(channel.Name)
+	cid := "UCMUnInmOkrWN4gof9KlhNmQ"
+	channel := &pb.Channel{Id: cid}
+	channel, err = c.GetSetCname(ctx, channel)
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(channel.Name)
 
 	// get channel: pass test
 	// cid := "UCMUnInmOkrWN4gof9KlhNmQ"
@@ -56,12 +56,12 @@ func main() {
 	// fmt.Println(videos)
 
 	// get channels
-	cs := &pb.Channels{}
-	res, err := c.GetChannels(ctx, cs)
-	if err != nil {
-		log.Println(err)
-	}
-	for _, c := range res.Channels {
-		fmt.Println(c)
-	}
+	// cs := &pb.Channels{}
+	// res, err := c.GetChannels(ctx, cs)
+	// if err != nil {
+	//         log.Println(err)
+	// }
+	// for _, c := range res.Channels {
+	//         fmt.Println(c)
+	// }
 }
