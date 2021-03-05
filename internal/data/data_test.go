@@ -27,7 +27,7 @@ func TestGetCid(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	got, err := getCid(dc, ts)
+	got, err := getCid(dc, ts, false)
 	if err != nil {
 		t.Error(err)
 	}
@@ -71,7 +71,7 @@ func TestGetVideoPrivate(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	v, err := getVideo(dc, &pb.Video{Id: vid})
+	v, err := getVideo(dc, &pb.Video{Id: vid}, false)
 	if err != nil {
 		t.Error(err)
 	}
