@@ -83,7 +83,7 @@ func TestGetVids(t *testing.T) {
 	fr := NewFetcherRepo()
 	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ"}
 
-	c, err := fr.GetVids(c)
+	c, err := fr.GetVids(c, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,7 +99,7 @@ func TestGetVideos(t *testing.T) {
 	fr := NewFetcherRepo()
 	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ"}
 
-	got, err := fr.GetVideos(c)
+	got, err := fr.GetVideos(c, false)
 	if err != nil {
 		t.Fatal(err)
 	}

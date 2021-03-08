@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 	"github.com/hi20160616/yt_fetcher/internal/biz"
@@ -17,7 +18,8 @@ func menu() {
 	fmt.Println("[!] Options here:")
 	fmt.Println("[1] Add or update Channel by id")
 	fmt.Println("[2] Update Channels")
-	fmt.Println("[3] Delete Channel by id")
+	fmt.Println("[3] Update Channels Greedy!")
+	fmt.Println("[4] Delete Channel by id")
 	fmt.Println("[q] Quit")
 	fmt.Printf(">> Input your choice: ")
 }
@@ -38,14 +40,29 @@ func main() {
 			menu()
 			continue
 		case "2":
-			fmt.Println(">> Update channels ...")
+			fmt.Println(">> Update channels")
 			log.Println("Start!")
-			updateChannel()
-			log.Println("")
-			fmt.Println("done.\n------------------------------------------------------")
+			updateChannel(false)
+			log.Println("done.")
+			fmt.Println("------------------------------------------------------")
 			menu()
 			continue
 		case "3":
+			fmt.Println(">> Update channels Greedy!")
+			fmt.Println(">> This should be slowly but fully rewrite the records!")
+			fmt.Println(">> Are you sure?![y/N]")
+			fmt.Printf(">> ")
+			scanner.Scan()
+			answer := scanner.Text()
+			if strings.ToLower(strings.TrimSpace(answer)) == "y" {
+				log.Println("Greedy Update Start!")
+				updateChannel(true)
+				log.Println("done")
+				fmt.Println("------------------------------------------------------")
+			}
+			menu()
+			continue
+		case "4":
 			fmt.Printf(">> Input Channel id: ")
 			scanner.Scan()
 			cid = scanner.Text()
@@ -86,8 +103,7 @@ func delChannel(id string) error {
 	return fr.DelChannel(&pb.Channel{Id: id})
 }
 
-// TODO: impletement
-func updateChannel() error {
+func updateChannel(greedy bool) error {
 	fr := data.NewFetcherRepo()
 	fc := biz.NewFetcherCase(fr)
 
@@ -98,6 +114,7 @@ func updateChannel() error {
 		return err
 	}
 	// 2. for range cids, get vids from video pages where cid is
-	err = fc.UpdateChannels(cs)
+	fc.SetGreedy(greedy)
+	err = fc.UpdateChannels(cs, fc.GetGreedy())
 	return nil
 }

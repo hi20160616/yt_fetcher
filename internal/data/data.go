@@ -13,7 +13,6 @@ import (
 var _ biz.FetcherRepo = new(fetcherRepo)
 
 type fetcherRepo struct {
-	Greedy bool
 }
 
 func NewFetcherRepo() biz.FetcherRepo {
@@ -113,19 +112,19 @@ func getVids(dc *sql.DB, c *pb.Channel, greedy bool) (*pb.Channel, error) {
 }
 
 // GetVids obtain videoIds by c.Id, default is ungreedy
-func (fr *fetcherRepo) GetVids(c *pb.Channel) (*pb.Channel, error) {
+func (fr *fetcherRepo) GetVids(c *pb.Channel, greedy bool) (*pb.Channel, error) {
 	dc, err := db.NewDBCase()
 	if err != nil {
 		return nil, err
 	}
 	defer dc.Close()
-	return getVids(dc, c, fr.Greedy)
+	return getVids(dc, c, greedy)
 }
 
 // GetVideos get or (if greedy) storage videos info to db by videos page of the channel
-func (fr *fetcherRepo) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
+func (fr *fetcherRepo) GetVideos(c *pb.Channel, greedy bool) ([]*pb.Video, error) {
 	// greedy := false // so, it will get videos by db search only
-	c, err := fr.GetVids(c)
+	c, err := fr.GetVids(c, greedy)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +133,7 @@ func (fr *fetcherRepo) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
 		return nil, err
 	}
 	defer dc.Close()
-	return getVideos(dc, c, fr.Greedy)
+	return getVideos(dc, c, greedy)
 }
 
 // getVideos get videos from db by c.Id
@@ -238,7 +237,7 @@ func (fr *fetcherRepo) DelChannel(c *pb.Channel) error {
 }
 
 // UpdateChannels default greedy false
-func (fr *fetcherRepo) UpdateChannels(cs *pb.Channels) error {
+func (fr *fetcherRepo) UpdateChannels(cs *pb.Channels, greedy bool) error {
 	dc, err := db.NewDBCase()
 	if err != nil {
 		return err
@@ -250,7 +249,7 @@ func (fr *fetcherRepo) UpdateChannels(cs *pb.Channels) error {
 		return err
 	}
 	for _, c := range cs.Channels {
-		if err = updateChannelFromSource(dc, c, fr.Greedy); err != nil {
+		if err = updateChannelFromSource(dc, c, greedy); err != nil {
 			return err
 		}
 	}
@@ -266,7 +265,6 @@ func (fr *fetcherRepo) UpdateChannels(cs *pb.Channels) error {
 //    2.2. if not greedy
 //         2.2.1. if vid not exist in videos, getVideoFromApi and InsertOrUpdateVideo
 //         2.2.2. if vid exist in videos, pass the loop this time.
-// TODO: test, update channels last_updated
 func updateChannelFromSource(dc *sql.DB, c *pb.Channel, greedy bool) error {
 	// must greedy here, so get Vids from source every request
 	c, err := getVids(dc, c, true)

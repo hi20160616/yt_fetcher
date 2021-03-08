@@ -85,8 +85,6 @@ func getCidFromSource(vid string) (string, error) {
 
 }
 
-// TODO: get channel id and name then insert
-// TODO: rename the function
 func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	v := &pb.Video{Id: vid}
 	client := youtube.Client{}

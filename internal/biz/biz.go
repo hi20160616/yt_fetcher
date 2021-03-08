@@ -7,17 +7,18 @@ import (
 )
 
 type FetcherCase struct {
-	repo FetcherRepo
+	greedy bool
+	repo   FetcherRepo
 }
 
 type FetcherRepo interface {
 	NewVideo(string) (*pb.Video, error)
 	GetVideo(*pb.Video) (*pb.Video, error)
-	GetVids(*pb.Channel) (*pb.Channel, error)
-	GetVideos(*pb.Channel) ([]*pb.Video, error)
+	GetVids(*pb.Channel, bool) (*pb.Channel, error)
+	GetVideos(*pb.Channel, bool) ([]*pb.Video, error)
 	GetChannelName(*pb.Channel) (*pb.Channel, error)
 	GetChannel(*pb.Channel) (*pb.Channel, error)
-	UpdateChannels(*pb.Channels) error
+	UpdateChannels(*pb.Channels, bool) error
 	DelChannel(*pb.Channel) error
 	GetChannels(*pb.Channels) (*pb.Channels, error)
 }
@@ -27,7 +28,7 @@ func NewFetcherCase(repo FetcherRepo) *FetcherCase {
 }
 
 func (fc *FetcherCase) GetVideoIds(c *pb.Channel) (*pb.Channel, error) {
-	c, err := fc.repo.GetVids(c)
+	c, err := fc.repo.GetVids(c, fc.greedy)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +36,7 @@ func (fc *FetcherCase) GetVideoIds(c *pb.Channel) (*pb.Channel, error) {
 }
 
 func (fc *FetcherCase) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
-	videos, err := fc.repo.GetVideos(c)
+	videos, err := fc.repo.GetVideos(c, fc.greedy)
 	if err != nil {
 		return nil, err
 	}
@@ -67,6 +68,14 @@ func (fc *FetcherCase) GetChannels(cs *pb.Channels) (*pb.Channels, error) {
 	return fc.repo.GetChannels(cs)
 }
 
-func (fc *FetcherCase) UpdateChannels(cs *pb.Channels) error {
-	return fc.repo.UpdateChannels(cs)
+func (fc *FetcherCase) UpdateChannels(cs *pb.Channels, greedy bool) error {
+	return fc.repo.UpdateChannels(cs, fc.greedy)
+}
+
+func (fc *FetcherCase) SetGreedy(greedy bool) {
+	fc.greedy = greedy
+}
+
+func (fc *FetcherCase) GetGreedy() bool {
+	return fc.greedy
 }
