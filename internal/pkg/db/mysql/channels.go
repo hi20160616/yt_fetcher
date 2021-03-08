@@ -116,6 +116,9 @@ func DelChannel(db *sql.DB, c *pb.Channel) error {
 
 	if exist {
 		row := db.QueryRow("DELETE FROM channels WHERE id = ?", c.Id)
+		if row.Err() == nil {
+			row = db.QueryRow("DELETE FROM videos WHERE cid = ?", c.Id)
+		}
 		return row.Err()
 	}
 	return errors.New("DelChannel error")
