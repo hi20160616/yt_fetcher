@@ -16,6 +16,7 @@ type FetcherRepo interface {
 	GetVideo(*pb.Video) (*pb.Video, error)
 	GetVids(*pb.Channel, bool) (*pb.Channel, error)
 	GetVideos(*pb.Channel, bool) ([]*pb.Video, error)
+	GetVideosFromTo(*pb.Videos) (*pb.Videos, error)
 	GetChannelName(*pb.Channel) (*pb.Channel, error)
 	GetChannel(*pb.Channel) (*pb.Channel, error)
 	UpdateChannels(*pb.Channels, bool) error
@@ -41,6 +42,14 @@ func (fc *FetcherCase) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
 		return nil, err
 	}
 	return videos, nil
+}
+
+func (fc *FetcherCase) GetVideosFromTo(vs *pb.Videos) ([]*pb.Video, error) {
+	vs, err := fc.repo.GetVideosFromTo(vs)
+	if err != nil {
+		return nil, err
+	}
+	return vs.Videos, nil
 }
 
 func (fc *FetcherCase) GetVideo(v *pb.Video) (*pb.Video, error) {

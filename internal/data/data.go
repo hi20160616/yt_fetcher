@@ -121,6 +121,10 @@ func (fr *fetcherRepo) GetVids(c *pb.Channel, greedy bool) (*pb.Channel, error) 
 	return getVids(dc, c, greedy)
 }
 
+func (fr *fetcherRepo) GetVideosFromTo(vs *pb.Videos) (*pb.Videos, error) {
+	return nil, nil
+}
+
 // GetVideos get or (if greedy) storage videos info to db by videos page of the channel
 func (fr *fetcherRepo) GetVideos(c *pb.Channel, greedy bool) ([]*pb.Video, error) {
 	// greedy := false // so, it will get videos by db search only

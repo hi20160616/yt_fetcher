@@ -21,6 +21,8 @@ type YoutubeFetcherClient interface {
 	GetVideoIds(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Channel, error)
 	// Get videos info by page url set in channel
 	GetVideos(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Videos, error)
+	// Get videos info updated from time a to time b
+	GetVideosFromTo(ctx context.Context, in *Videos, opts ...grpc.CallOption) (*Videos, error)
 	// Get video info by videoId
 	GetVideo(ctx context.Context, in *Video, opts ...grpc.CallOption) (*Video, error)
 	// Get and set channel name by cid
@@ -51,6 +53,15 @@ func (c *youtubeFetcherClient) GetVideoIds(ctx context.Context, in *Channel, opt
 func (c *youtubeFetcherClient) GetVideos(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Videos, error) {
 	out := new(Videos)
 	err := c.cc.Invoke(ctx, "/yt_fetcher.api.YoutubeFetcher/GetVideos", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *youtubeFetcherClient) GetVideosFromTo(ctx context.Context, in *Videos, opts ...grpc.CallOption) (*Videos, error) {
+	out := new(Videos)
+	err := c.cc.Invoke(ctx, "/yt_fetcher.api.YoutubeFetcher/GetVideosFromTo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +112,8 @@ type YoutubeFetcherServer interface {
 	GetVideoIds(context.Context, *Channel) (*Channel, error)
 	// Get videos info by page url set in channel
 	GetVideos(context.Context, *Channel) (*Videos, error)
+	// Get videos info updated from time a to time b
+	GetVideosFromTo(context.Context, *Videos) (*Videos, error)
 	// Get video info by videoId
 	GetVideo(context.Context, *Video) (*Video, error)
 	// Get and set channel name by cid
@@ -121,6 +134,9 @@ func (UnimplementedYoutubeFetcherServer) GetVideoIds(context.Context, *Channel) 
 }
 func (UnimplementedYoutubeFetcherServer) GetVideos(context.Context, *Channel) (*Videos, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVideos not implemented")
+}
+func (UnimplementedYoutubeFetcherServer) GetVideosFromTo(context.Context, *Videos) (*Videos, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetVideosFromTo not implemented")
 }
 func (UnimplementedYoutubeFetcherServer) GetVideo(context.Context, *Video) (*Video, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVideo not implemented")
@@ -179,6 +195,24 @@ func _YoutubeFetcher_GetVideos_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(YoutubeFetcherServer).GetVideos(ctx, req.(*Channel))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _YoutubeFetcher_GetVideosFromTo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Videos)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(YoutubeFetcherServer).GetVideosFromTo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/yt_fetcher.api.YoutubeFetcher/GetVideosFromTo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(YoutubeFetcherServer).GetVideosFromTo(ctx, req.(*Videos))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -269,6 +303,10 @@ var YoutubeFetcher_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetVideos",
 			Handler:    _YoutubeFetcher_GetVideos_Handler,
+		},
+		{
+			MethodName: "GetVideosFromTo",
+			Handler:    _YoutubeFetcher_GetVideosFromTo_Handler,
 		},
 		{
 			MethodName: "GetVideo",

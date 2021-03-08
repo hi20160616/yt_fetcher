@@ -13,6 +13,8 @@ service YoutubeFetcher{
     rpc GetVideoIds(Channel) returns (Channel) {}
     // Get videos info by page url set in channel
     rpc GetVideos(Channel) returns (Videos){}
+    // Get videos info updated from time a to time b
+    rpc GetVideosFromTo(Videos) returns (Videos){}
     // Get video info by videoId
     rpc GetVideo(Video) returns (Video){}
     // Get and set channel name by cid
@@ -45,5 +47,7 @@ message Video{
 }
 
 message Videos{
-    repeated Video videos = 1;
+    string after = 1;
+    string before = 2;
+    repeated Video videos = 3;
 }
