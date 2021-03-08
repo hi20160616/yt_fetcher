@@ -12,7 +12,9 @@ import (
 
 var _ biz.FetcherRepo = new(fetcherRepo)
 
-type fetcherRepo struct{}
+type fetcherRepo struct {
+	Greedy bool
+}
 
 func NewFetcherRepo() biz.FetcherRepo {
 	return &fetcherRepo{}
@@ -90,7 +92,7 @@ func getCid(dc *sql.DB, vid string, greedy bool) (string, error) {
 
 // getVids obtain videoIds by c.Id
 // If greedy and no ids in db, fetch videos' info from channel page
-// Notice: If greedy, it will storage vids and cid to db
+// -- Func Commented! Notice: If greedy, it will storage vids and cid to db --
 func getVids(dc *sql.DB, c *pb.Channel, greedy bool) (*pb.Channel, error) {
 	var err error
 	if !greedy {
@@ -104,9 +106,9 @@ func getVids(dc *sql.DB, c *pb.Channel, greedy bool) (*pb.Channel, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err = db.InsertVids(dc, c.Vids, c.Id); err != nil {
-		return nil, err
-	}
+	// if err = db.InsertVids(dc, c.Vids, c.Id); err != nil {
+	//         return nil, err
+	// }
 	return c, nil
 }
 
@@ -117,12 +119,12 @@ func (fr *fetcherRepo) GetVids(c *pb.Channel) (*pb.Channel, error) {
 		return nil, err
 	}
 	defer dc.Close()
-	return getVids(dc, c, false)
+	return getVids(dc, c, fr.Greedy)
 }
 
 // GetVideos get or (if greedy) storage videos info to db by videos page of the channel
 func (fr *fetcherRepo) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
-	greedy := false // so, it will get videos by db search only
+	// greedy := false // so, it will get videos by db search only
 	c, err := fr.GetVids(c)
 	if err != nil {
 		return nil, err
@@ -132,7 +134,7 @@ func (fr *fetcherRepo) GetVideos(c *pb.Channel) ([]*pb.Video, error) {
 		return nil, err
 	}
 	defer dc.Close()
-	return getVideos(dc, c, greedy)
+	return getVideos(dc, c, fr.Greedy)
 }
 
 // getVideos get videos from db by c.Id
@@ -159,57 +161,62 @@ func getVideos(dc *sql.DB, c *pb.Channel, greedy bool) ([]*pb.Video, error) {
 
 // GetChannel query channel info
 // If nothing got from database, get video ids and channel info from source web page.
-func (fr *fetcherRepo) GetChannel(c *pb.Channel) error {
+func (fr *fetcherRepo) GetChannel(c *pb.Channel) (*pb.Channel, error) {
 	// Select name from channels
 	dc, err := db.NewDBCase()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer dc.Close()
 
 	return getChannel(dc, c, false)
 }
 
-func getChannel(dc *sql.DB, c *pb.Channel, greedy bool) error {
+// getChannel get channel from database by id,
+// it will fetch from source page if only greedy is true
+func getChannel(dc *sql.DB, c *pb.Channel, greedy bool) (*pb.Channel, error) {
 	if err := db.SelectChannelByCid(dc, c); err != nil {
 		if errors.Is(err, sql.ErrNoRows) && greedy { // if greedy and no rows found out
 			// Get video ids and channel info from source
-			if err := getChannelFromSource(c); err != nil {
-				return err
+			c, err := getChannelFromSource(c)
+			if err != nil {
+				return nil, err
 			}
 			if err = db.InsertChannel(dc, c); err != nil { // storage channel info just got
-				return err
+				return nil, errors.WithMessage(err, "getChannel error")
 			}
-			return nil
+			return c, nil
 		}
-		return err
+		return nil, err
 	}
-	return nil
+	return c, nil
 }
 
-func (fr *fetcherRepo) GetChannelName(c *pb.Channel) error {
-	// Select name from channels
+func (fr *fetcherRepo) GetChannelName(c *pb.Channel) (*pb.Channel, error) {
 	dc, err := db.NewDBCase()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer dc.Close()
-	return getChannel(dc, c, false)
+	return getChannelName(dc, c, false)
 }
 
-func getChannelName(dc *sql.DB, c *pb.Channel, greedy bool) error {
+// getChannelName get channel name by id from database,
+// it will fetch from source page if only greedy if true
+func getChannelName(dc *sql.DB, c *pb.Channel, greedy bool) (*pb.Channel, error) {
 	if err := db.SelectChannelByCid(dc, c); err != nil {
 		if errors.Is(err, sql.ErrNoRows) && greedy { // if greedy and no rows found out
-			if err = getChannelFromSource(c); err != nil {
-				return err
+			if c, err = getChannelFromSource(c); err != nil {
+				return nil, err
 			}
-			return db.InsertChannel(dc, c) // storage channel info just got
+			return c, db.InsertChannel(dc, c) // storage channel info just got
 		}
-		return err
+		return nil, err
 	}
-	return nil
+	return c, nil
 }
 
+// GetChannels get all channels from database
 func (fr *fetcherRepo) GetChannels(cs *pb.Channels) (*pb.Channels, error) {
 	dc, err := db.NewDBCase()
 	if err != nil {
@@ -220,11 +227,72 @@ func (fr *fetcherRepo) GetChannels(cs *pb.Channels) (*pb.Channels, error) {
 	return db.SelectChannels(dc, cs)
 }
 
-func DelChannel(c *pb.Channel) error {
+// DelChannel delete channel by id in c
+func (fr *fetcherRepo) DelChannel(c *pb.Channel) error {
 	dc, err := db.NewDBCase()
 	if err != nil {
 		return err
 	}
 	defer dc.Close()
 	return db.DelChannel(dc, c)
+}
+
+// UpdateChannels default greedy false
+func (fr *fetcherRepo) UpdateChannels(cs *pb.Channels) error {
+	dc, err := db.NewDBCase()
+	if err != nil {
+		return err
+	}
+	defer dc.Close()
+
+	cs, err = fr.GetChannels(cs)
+	if err != nil {
+		return err
+	}
+	for _, c := range cs.Channels {
+		if err = updateChannelFromSource(dc, c, fr.Greedy); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// updateChannelFromSource update channel by source
+// greedy true: get videos from api directly
+// greedy false: get videos from api if only it is not exist in table videos
+// 1. get vids from the channel source every request
+// 2. for range vids to get and set videos
+//    2.1. if greedy, get video directly from api and InsertOrUpdateVideo
+//    2.2. if not greedy
+//         2.2.1. if vid not exist in videos, getVideoFromApi and InsertOrUpdateVideo
+//         2.2.2. if vid exist in videos, pass the loop this time.
+// TODO: test, update channels last_updated
+func updateChannelFromSource(dc *sql.DB, c *pb.Channel, greedy bool) error {
+	// must greedy here, so get Vids from source every request
+	c, err := getVids(dc, c, true)
+	if err != nil {
+		return err
+	}
+	do := func(vid string) error {
+		// no matter video is updated in youtube, just get info from source
+		v, err := getVideoFromApi(dc, vid)
+		if err != nil {
+			return err
+		}
+		return db.InsertOrUpdateVideo(dc, v)
+	}
+	for _, vid := range c.Vids {
+		if greedy {
+			do(vid)
+		} else {
+			exist, err := db.VidExist(dc, vid)
+			if err != nil {
+				return err
+			}
+			if !exist {
+				do(vid)
+			}
+		}
+	}
+	return db.UpdateChannel(dc, c) // actualy update chananel last_updated field.
 }

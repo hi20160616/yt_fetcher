@@ -112,7 +112,8 @@ func TestGetSetChannel(t *testing.T) {
 	fr := NewFetcherRepo()
 	c := &pb.Channel{Id: "UCMUnInmOkrWN4gof9KlhNmQ"}
 
-	if err := fr.GetChannel(c); err != nil {
+	c, err := fr.GetChannel(c)
+	if err != nil {
 		t.Error(err)
 	}
 
@@ -124,7 +125,8 @@ func TestGetSetChannel(t *testing.T) {
 func TestGetChannelFromSource(t *testing.T) {
 	c := &pb.Channel{Id: "UCMUnInmOkrWN4gof9KlhNmQ"}
 
-	if err := getChannelFromSource(c); err != nil {
+	c, err := getChannelFromSource(c)
+	if err != nil {
 		t.Error(err)
 	}
 
@@ -143,5 +145,17 @@ func TestGetChannels(t *testing.T) {
 		for _, c := range got.Channels {
 			fmt.Println(c)
 		}
+	}
+}
+
+func TestUpdateChannels(t *testing.T) {
+	c := &pb.Channel{Id: "UCMUnInmOkrWN4gof9KlhNmQ"}
+	dc, err := db.NewDBCase()
+	if err != nil {
+		t.Error(err)
+	}
+
+	if err := updateChannelFromSource(dc, c, false); err != nil {
+		t.Error(err)
 	}
 }

@@ -77,10 +77,10 @@ func UpdateChannel(db *sql.DB, c *pb.Channel) error {
 	return nil
 }
 
-func cidExist(db *sql.DB, cid string) (bool, error) {
+func CidExist(db *sql.DB, cid string) (bool, error) {
 	rows, err := db.Query("SELECT * FROM channels WHERE id=?", cid)
 	if err != nil {
-		return false, errors.WithMessage(err, "cidExist error")
+		return false, errors.WithMessage(err, "CidExist error")
 	}
 	defer rows.Close()
 	return rows.Next(), nil
@@ -92,9 +92,9 @@ func InsertOrUpdateChannel(db *sql.DB, c *pb.Channel) error {
 		return errors.New("Provide nil channel id")
 	}
 
-	exist, err := cidExist(db, c.Id)
+	exist, err := CidExist(db, c.Id)
 	if err != nil {
-		return errors.WithMessage(err, "InsertOrUpdateChannel cidExist error")
+		return errors.WithMessage(err, "InsertOrUpdateChannel CidExist error")
 	}
 	if exist {
 		return UpdateChannel(db, c)
@@ -109,7 +109,7 @@ func DelChannel(db *sql.DB, c *pb.Channel) error {
 		return errors.New("Provide nil channel id")
 	}
 
-	exist, err := cidExist(db, c.Id)
+	exist, err := CidExist(db, c.Id)
 	if err != nil {
 		return err
 	}

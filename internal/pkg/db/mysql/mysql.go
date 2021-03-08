@@ -34,11 +34,11 @@ func InsertOrUpdate(db *sql.DB, v *pb.Video, c *pb.Channel) error {
 		return errors.New("provide nil vid")
 	}
 
-	vExist, err := vidExist(db, v.Id)
+	vExist, err := VidExist(db, v.Id)
 	if err != nil {
 		return err
 	}
-	cExist, err := cidExist(db, v.Cid)
+	cExist, err := CidExist(db, v.Cid)
 	if err != nil {
 		return err
 	}
@@ -65,11 +65,11 @@ func InsertOrUpdateVC(db *sql.DB, v *pb.Video) error {
 		return errors.New("provide nil vid")
 	}
 
-	vExist, err := vidExist(db, v.Id)
+	vExist, err := VidExist(db, v.Id)
 	if err != nil {
 		return err
 	}
-	cExist, err := cidExist(db, v.Cid)
+	cExist, err := CidExist(db, v.Cid)
 	if err != nil {
 		return err
 	}

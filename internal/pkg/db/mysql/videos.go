@@ -105,7 +105,7 @@ func InsertVids(db *sql.DB, vids []string, cid string) error {
 	}
 	defer stmt.Close()
 	for _, vid := range vids {
-		exist, err := vidExist(db, vid)
+		exist, err := VidExist(db, vid)
 		if err != nil {
 			return errors.WithMessage(err, "InsertVids error")
 		}
@@ -150,10 +150,10 @@ func InsertVideo(db *sql.DB, v *pb.Video) error {
 	return nil
 }
 
-func vidExist(db *sql.DB, vid string) (bool, error) {
+func VidExist(db *sql.DB, vid string) (bool, error) {
 	rows, err := db.Query("SELECT * FROM videos WHERE id=?", vid)
 	if err != nil {
-		return false, errors.WithMessage(err, "vidExist Query error")
+		return false, errors.WithMessage(err, "VidExist Query error")
 	}
 	defer rows.Close()
 	return rows.Next(), nil
@@ -165,9 +165,9 @@ func InsertOrUpdateVideo(db *sql.DB, v *pb.Video) error {
 		return errors.New("provide nil videoId")
 	}
 
-	exist, err := vidExist(db, v.Id)
+	exist, err := VidExist(db, v.Id)
 	if err != nil {
-		return errors.WithMessage(err, "InsertOrUpdateVideo vidExist error")
+		return errors.WithMessage(err, "InsertOrUpdateVideo VidExist error")
 	}
 	if exist {
 		return UpdateVideo(db, v)

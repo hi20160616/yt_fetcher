@@ -8,6 +8,7 @@ import (
 	"os"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
+	"github.com/hi20160616/yt_fetcher/internal/biz"
 	"github.com/hi20160616/yt_fetcher/internal/data"
 	"github.com/hi20160616/yt_fetcher/internal/pkg/db/mysql"
 )
@@ -40,7 +41,8 @@ func main() {
 			fmt.Println(">> Update channels ...")
 			log.Println("Start!")
 			updateChannel()
-			log.Println("done.\n------------------------------------------------------")
+			log.Println("")
+			fmt.Println("done.\n------------------------------------------------------")
 			menu()
 			continue
 		case "3":
@@ -74,33 +76,28 @@ func addOrUpdateChannel(id string) error {
 
 	c := &pb.Channel{Id: id}
 	// get info from source
-	err = data.GetChannelFromSource(c)
+	c, err = data.GetChannelFromSource(c)
 	// storage
-	return mysql.InsertOrUpdateChannel(dc, &pb.Channel{Id: id})
+	return mysql.InsertOrUpdateChannel(dc, c)
 }
 
 func delChannel(id string) error {
-	return data.DelChannel(&pb.Channel{Id: id})
+	fr := data.NewFetcherRepo()
+	return fr.DelChannel(&pb.Channel{Id: id})
 }
 
 // TODO: impletement
 func updateChannel() error {
+	fr := data.NewFetcherRepo()
+	fc := biz.NewFetcherCase(fr)
+
 	// 1. get cids from database
 	cs := &pb.Channels{}
-	dc, err := mysql.NewDBCase()
-	if err != nil {
-		return err
-	}
-	cs, err = mysql.SelectChannels(dc, cs)
+	cs, err := fc.GetChannels(cs)
 	if err != nil {
 		return err
 	}
 	// 2. for range cids, get vids from video pages where cid is
-	// TODO: impletement Update func
-	// fr := data.NewFetcherRepo()
-	// for _, c := range cs.Channels {
-	//
-	// }
-	// 3. insert or update videos
+	err = fc.UpdateChannels(cs)
 	return nil
 }

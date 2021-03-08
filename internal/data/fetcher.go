@@ -13,19 +13,19 @@ import (
 	"github.com/pkg/errors"
 )
 
-func GetChannelFromSource(c *pb.Channel) error {
+func GetChannelFromSource(c *pb.Channel) (*pb.Channel, error) {
 	return getChannelFromSource(c)
 }
 
-func getChannelFromSource(c *pb.Channel) error {
+func getChannelFromSource(c *pb.Channel) (*pb.Channel, error) {
 	if c.Id == "" || c.Id == "cid" {
-		return errors.New("nil or wrong channel id: " + c.Id)
+		return nil, errors.New("nil or wrong channel id: " + c.Id)
 	}
 	// https://www.youtube.com/channel/UCMUnInmOkrWN4gof9KlhNmQ/videos
 	u, err := url.Parse("https://www.youtube.com/channel/" + c.Id + "/videos")
 	raw, _, err := exhtml.GetRawAndDoc(u, 1*time.Minute)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// get channel name
 	// c.Name = exhtml.ElementsByTag(doc, "title")[0].FirstChild.Data
@@ -33,19 +33,19 @@ func getChannelFromSource(c *pb.Channel) error {
 	re := regexp.MustCompile(`<title>(.*) - YouTube</title>`)
 	rs := re.FindAllSubmatch(raw, -1)
 	if len(rs) == 0 {
-		return errors.New("getChannelFromSource get channel name match nothing:" + c.Id)
+		return nil, errors.New("getChannelFromSource get channel name match nothing:" + c.Id)
 	}
 	c.Name = html.UnescapeString(string(rs[0][1]))
 	// get vids
 	re = regexp.MustCompile(`"gridVideoRenderer":{"videoId":"(.*?)","thumbnail":{"thumbnails"`)
 	rs = re.FindAllSubmatch(raw, -1)
 	if len(rs) == 0 {
-		return errors.New("getChannelFromSource get vids match nothing")
+		return nil, errors.New("getChannelFromSource get vids match nothing")
 	}
 	for _, r := range rs {
 		c.Vids = append(c.Vids, string(r[1]))
 	}
-	return nil
+	return c, nil
 }
 
 // getVidsFromSource get vids from raw html page.
