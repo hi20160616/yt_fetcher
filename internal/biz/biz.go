@@ -22,6 +22,7 @@ type FetcherRepo interface {
 	UpdateChannels(*pb.Channels, bool) error
 	DelChannel(*pb.Channel) error
 	GetChannels(*pb.Channels) (*pb.Channels, error)
+	SearchVideos(*pb.Videos) (*pb.Videos, error)
 }
 
 func NewFetcherCase(repo FetcherRepo) *FetcherCase {
@@ -34,6 +35,11 @@ func (fc *FetcherCase) GetVideoIds(c *pb.Channel) (*pb.Channel, error) {
 		return nil, err
 	}
 	return c, nil
+}
+
+// TODO: implement
+func (fc *FetcherCase) SearchVideos(vs *pb.Videos) (*pb.Videos, error) {
+	return nil, nil
 }
 
 func (fc *FetcherCase) GetVideos(c *pb.Channel) (*pb.Videos, error) {

@@ -30,6 +30,11 @@ func (fr *fetcherRepo) NewVideo(id string) (*pb.Video, error) {
 	return v, nil
 }
 
+// TODO: implement
+func (fr *fetcherRepo) SearchVideos(vs *pb.Videos) (*pb.Videos, error) {
+	return nil, nil
+}
+
 // GetVideo get video info if it's Id is currect
 // if video info not in db, it will obtain cid by api source and others by youtube pkg
 func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {

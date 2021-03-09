@@ -23,6 +23,8 @@ service YoutubeFetcher{
     rpc GetChannels(Channels) returns (Channels){}
     // Get Channel info by cid
     rpc GetChannel(Channel) returns (Channel){}
+    // Search videos if title or description contains keywords
+    rpc SearchVideos(Videos) returns (Videos){}
 }
 
 message Channel{
@@ -51,4 +53,5 @@ message Videos{
     string after = 1;
     string before = 2;
     repeated Video videos = 3;
+    repeated string keywords = 8;
 }

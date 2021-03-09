@@ -74,3 +74,8 @@ func (s *Server) GetChannels(ctx context.Context, in *pb.Channels) (*pb.Channels
 func (s *Server) GetVideosFromTo(ctx context.Context, in *pb.Videos) (*pb.Videos, error) {
 	return s.fc.GetVideosFromTo(in)
 }
+
+// TODO: implement
+func (s *Server) SearchVideos(ctx context.Context, in *pb.Videos) (*pb.Videos, error) {
+	return nil, nil
+}

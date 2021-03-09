@@ -31,6 +31,8 @@ type YoutubeFetcherClient interface {
 	GetChannels(ctx context.Context, in *Channels, opts ...grpc.CallOption) (*Channels, error)
 	// Get Channel info by cid
 	GetChannel(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Channel, error)
+	// Search videos if title or description contains keywords
+	SearchVideos(ctx context.Context, in *Videos, opts ...grpc.CallOption) (*Videos, error)
 }
 
 type youtubeFetcherClient struct {
@@ -104,6 +106,15 @@ func (c *youtubeFetcherClient) GetChannel(ctx context.Context, in *Channel, opts
 	return out, nil
 }
 
+func (c *youtubeFetcherClient) SearchVideos(ctx context.Context, in *Videos, opts ...grpc.CallOption) (*Videos, error) {
+	out := new(Videos)
+	err := c.cc.Invoke(ctx, "/yt_fetcher.api.YoutubeFetcher/SearchVideos", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // YoutubeFetcherServer is the server API for YoutubeFetcher service.
 // All implementations must embed UnimplementedYoutubeFetcherServer
 // for forward compatibility
@@ -122,6 +133,8 @@ type YoutubeFetcherServer interface {
 	GetChannels(context.Context, *Channels) (*Channels, error)
 	// Get Channel info by cid
 	GetChannel(context.Context, *Channel) (*Channel, error)
+	// Search videos if title or description contains keywords
+	SearchVideos(context.Context, *Videos) (*Videos, error)
 	mustEmbedUnimplementedYoutubeFetcherServer()
 }
 
@@ -149,6 +162,9 @@ func (UnimplementedYoutubeFetcherServer) GetChannels(context.Context, *Channels)
 }
 func (UnimplementedYoutubeFetcherServer) GetChannel(context.Context, *Channel) (*Channel, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChannel not implemented")
+}
+func (UnimplementedYoutubeFetcherServer) SearchVideos(context.Context, *Videos) (*Videos, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchVideos not implemented")
 }
 func (UnimplementedYoutubeFetcherServer) mustEmbedUnimplementedYoutubeFetcherServer() {}
 
@@ -289,6 +305,24 @@ func _YoutubeFetcher_GetChannel_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _YoutubeFetcher_SearchVideos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Videos)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(YoutubeFetcherServer).SearchVideos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/yt_fetcher.api.YoutubeFetcher/SearchVideos",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(YoutubeFetcherServer).SearchVideos(ctx, req.(*Videos))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // YoutubeFetcher_ServiceDesc is the grpc.ServiceDesc for YoutubeFetcher service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -323,6 +357,10 @@ var YoutubeFetcher_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetChannel",
 			Handler:    _YoutubeFetcher_GetChannel_Handler,
+		},
+		{
+			MethodName: "SearchVideos",
+			Handler:    _YoutubeFetcher_SearchVideos_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
