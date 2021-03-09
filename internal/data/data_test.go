@@ -103,7 +103,7 @@ func TestGetVideos(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for i, video := range got {
+	for i, video := range got.Videos {
 		fmt.Println(i, ":", video.Title)
 	}
 }

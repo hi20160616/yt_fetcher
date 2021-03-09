@@ -7,7 +7,6 @@ import (
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 	"github.com/hi20160616/yt_fetcher/internal/biz"
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
 
@@ -47,60 +46,31 @@ func (s *Server) Stop(ctx context.Context) error {
 
 // GetVideo implements api.GetVideo, it get video's info and set it back to `in`
 func (s *Server) GetVideo(ctx context.Context, in *pb.Video) (*pb.Video, error) {
-	log.Println("Get video")
-	in, err := s.fc.GetVideo(in)
-	if err != nil {
-		log.Printf("GetVideo err: %+v", err)
-		return nil, errors.WithMessage(err, "service.Server.GetVideo err")
-	}
-	log.Println("Get video done.")
-	return in, nil
+	return s.fc.GetVideo(in)
 }
 
 // GetVideoIds implements api.GetVideoIds, it get videoIds by `in.Url` and set it back to `in`
 func (s *Server) GetVideoIds(ctx context.Context, in *pb.Channel) (*pb.Channel, error) {
-	log.Println("Get video ids")
-	s.fc.GetVideoIds(in)
-	log.Println("Get video ids done.")
-	return in, nil
+	return s.fc.GetVideoIds(in)
 }
 
 // GetVideos implements api.GetVideos, it get videos by `in.VideoIds` and set it back to `in`
 func (s *Server) GetVideos(ctx context.Context, in *pb.Channel) (*pb.Videos, error) {
-	log.Println("Get videos")
-	// call biz
-	videos, err := s.fc.GetVideos(in)
-	if err != nil {
-		log.Printf("GetVideos parse url err: %+v", err)
-		return nil, errors.WithMessage(err, "service.Server.GetVideos err")
-	}
-	log.Println("Get videos done.")
-	return &pb.Videos{Videos: videos}, nil
+	return s.fc.GetVideos(in)
 }
 
 func (s *Server) GetSetCname(ctx context.Context, in *pb.Channel) (*pb.Channel, error) {
-	in, err := s.fc.GetChannelName(in)
-	if err != nil {
-		log.Printf("GetSetCname err: %+v", err)
-		return nil, errors.WithMessage(err, "service.Server.GetSetCname err")
-	}
-	return in, nil
+	return s.fc.GetChannelName(in)
 }
 
 func (s *Server) GetChannel(ctx context.Context, in *pb.Channel) (*pb.Channel, error) {
-	in, err := s.fc.GetChannel(in)
-	if err != nil {
-		log.Printf("GetChannel err: %+v", err)
-		return nil, errors.WithMessage(err, "service.Server.GetChannel err")
-	}
-	return in, nil
+	return s.fc.GetChannel(in)
 }
 
 func (s *Server) GetChannels(ctx context.Context, in *pb.Channels) (*pb.Channels, error) {
-	in, err := s.fc.GetChannels(in)
-	if err != nil {
-		log.Printf("GetChannels err: %+v", err)
-		return nil, errors.WithMessage(err, "service.Server.GetChannels err")
-	}
-	return in, nil
+	return s.fc.GetChannels(in)
+}
+
+func (s *Server) GetVideosFromTo(ctx context.Context, in *pb.Videos) (*pb.Videos, error) {
+	return s.fc.GetVideosFromTo(in)
 }

@@ -7,9 +7,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+// SelectVideosFromTo select videos left join channels where rank != -1
 func SelectVideosFromTo(db *sql.DB, vs *pb.Videos) (*pb.Videos, error) {
 	var id, title, description, duration, cid, cname, last_updated sql.NullString
-	rows, err := db.Query("SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid = c.id WHERE v.last_updated>? AND v.last_updated<? order by cid;", vs.After, vs.Before)
+	rows, err := db.Query("SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid = c.id WHERE v.last_updated>? AND v.last_updated<? AND c.rank<>-1 order by cid;", vs.After, vs.Before)
 	if err != nil {
 		return nil, errors.WithMessage(err, "SelectVideosFromTo error")
 	}

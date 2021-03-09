@@ -141,7 +141,7 @@ func (fr *fetcherRepo) GetVideosFromTo(vs *pb.Videos) (*pb.Videos, error) {
 }
 
 // GetVideos get or (if greedy) storage videos info to db by videos page of the channel
-func (fr *fetcherRepo) GetVideos(c *pb.Channel, greedy bool) ([]*pb.Video, error) {
+func (fr *fetcherRepo) GetVideos(c *pb.Channel, greedy bool) (*pb.Videos, error) {
 	// greedy := false // so, it will get videos by db search only
 	c, err := fr.GetVids(c, greedy)
 	if err != nil {
@@ -159,7 +159,7 @@ func (fr *fetcherRepo) GetVideos(c *pb.Channel, greedy bool) ([]*pb.Video, error
 // If greedy is true, notice:
 // 1. It will get vids from videos page every request.
 // 2. It will insert or update tables: videos and channels
-func getVideos(dc *sql.DB, c *pb.Channel, greedy bool) ([]*pb.Video, error) {
+func getVideos(dc *sql.DB, c *pb.Channel, greedy bool) (*pb.Videos, error) {
 	c, err := getVids(dc, c, greedy)
 	if err != nil {
 		return nil, err
@@ -174,7 +174,7 @@ func getVideos(dc *sql.DB, c *pb.Channel, greedy bool) ([]*pb.Video, error) {
 		}
 		vs = append(vs, v)
 	}
-	return vs, nil
+	return &pb.Videos{Videos: vs}, nil
 }
 
 // GetChannel query channel info
