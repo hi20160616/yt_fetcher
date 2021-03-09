@@ -2,10 +2,46 @@ package mysql
 
 import (
 	"database/sql"
+	"fmt"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 	"github.com/pkg/errors"
 )
+
+// Search just search keywords is contained in title or description
+// TODO: pass test
+func Search(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, error) {
+	prepare := "SELECT v.id, v.title, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c ON v.cid = c.id"
+	for _, w := range keywords {
+		prepare += fmt.Sprintf("WHERE v.title LIKE '%%%s%%' OR v.description LIKE '%%%s%%'", w, w)
+	}
+
+	var id, title, description, duration, cid, cname, last_updated sql.NullString
+	rows, err := db.Query(prepare)
+	if err != nil {
+		return nil, errors.WithMessage(err, "Search error")
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := rows.Scan(&id, &title, &description, &duration, &cid, &cname, &last_updated); err != nil {
+			return nil, errors.WithMessage(err, "Search Scan error")
+		}
+		vs.Videos = append(vs.Videos, &pb.Video{
+			Id:          id.String,
+			Title:       title.String,
+			Description: description.String,
+			Duration:    duration.String,
+			Cid:         cid.String,
+			Cname:       cname.String,
+			LastUpdated: last_updated.String,
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, errors.WithMessage(err, "Search rows error")
+	}
+	return vs, nil
+}
 
 // SelectVideosFromTo select videos left join channels where rank != -1
 func SelectVideosFromTo(db *sql.DB, vs *pb.Videos) (*pb.Videos, error) {
