@@ -3,6 +3,8 @@ package data
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
+	"time"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 	"github.com/hi20160616/yt_fetcher/internal/biz"
@@ -122,7 +124,20 @@ func (fr *fetcherRepo) GetVids(c *pb.Channel, greedy bool) (*pb.Channel, error) 
 }
 
 func (fr *fetcherRepo) GetVideosFromTo(vs *pb.Videos) (*pb.Videos, error) {
-	return nil, nil
+	dc, err := db.NewDBCase()
+	if err != nil {
+		return nil, err
+	}
+	defer dc.Close()
+
+	timeStamp := func(days int) string {
+		t := time.Now().AddDate(0, 0, days).UnixNano()
+		return strconv.FormatInt(t, 10)[:16]
+	}
+
+	vs.After = timeStamp(-3) // 3 days ago
+	vs.Before = timeStamp(0)
+	return db.SelectVideosFromTo(dc, vs)
 }
 
 // GetVideos get or (if greedy) storage videos info to db by videos page of the channel

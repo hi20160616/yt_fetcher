@@ -159,3 +159,15 @@ func TestUpdateChannels(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestGetVideosFromTo(t *testing.T) {
+	fr := NewFetcherRepo()
+	vs := &pb.Videos{}
+	vs, err := fr.GetVideosFromTo(vs)
+	if err != nil {
+		t.Error(err)
+	}
+	for _, v := range vs.Videos {
+		fmt.Println(v.Cname, "\t", v.Title)
+	}
+}

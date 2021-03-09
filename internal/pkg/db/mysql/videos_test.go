@@ -3,10 +3,38 @@ package mysql
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"testing"
+	"time"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 )
+
+func TestSelectVideosFromTo(t *testing.T) {
+	db, err := NewDBCase()
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+
+	now := time.Now()
+	after := strconv.FormatInt(now.AddDate(0, 0, -7).UnixNano(), 10)[:16]
+	before := strconv.FormatInt(now.UnixNano(), 10)[:16]
+	vs, err := SelectVideosFromTo(db, &pb.Videos{After: after, Before: before})
+	if err != nil {
+		t.Error(err)
+	}
+	flag := false
+	for _, v := range vs.Videos {
+		if v.Title == "目前最詳盡的阿努納奇的故事，人類誕生的真正原因 | 老高與小茉 Mr & Mrs Gao" {
+			flag = true
+		}
+	}
+	if !flag {
+		t.Errorf("want: true, got false")
+	}
+
+}
 
 func TestSelectVideosByCid(t *testing.T) {
 	db, err := NewDBCase()

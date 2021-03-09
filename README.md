@@ -40,17 +40,19 @@ mysql> describe videos;
 | last_updated | varchar(16)  | YES  |     | NULL    |       |
 +--------------+--------------+------+-----+---------+-------+
 6 rows in set (0.01 sec)
-mysql> DROP TABLE channels;
-mysql> CREATE TABLE channels (id VARCHAR(24) NOT NULL, name VARCHAR(255), last_updated VARCHAR(16), UNIQUE KEY (id));
+mysql> CREATE TABLE channels (`id` VARCHAR(24) NOT NULL, `name` VARCHAR(255), `rank` INT(11), `last_updated` VARCHAR(16), UNIQUE KEY (id));
+Query OK, 0 rows affected, 1 warning (0.01 sec)
+
 mysql> describe channels;
 +--------------+--------------+------+-----+---------+-------+
 | Field        | Type         | Null | Key | Default | Extra |
 +--------------+--------------+------+-----+---------+-------+
 | id           | varchar(24)  | NO   | PRI | NULL    |       |
 | name         | varchar(255) | YES  |     | NULL    |       |
+| rank         | int          | YES  |     | NULL    |       |
 | last_updated | varchar(16)  | YES  |     | NULL    |       |
 +--------------+--------------+------+-----+---------+-------+
-3 rows in set (0.00 sec)
+4 rows in set (0.00 sec)
 ```
 
 3. Create User for the database

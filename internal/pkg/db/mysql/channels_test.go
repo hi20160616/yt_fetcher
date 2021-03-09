@@ -14,7 +14,7 @@ func TestInsertChannel(t *testing.T) {
 	}
 	defer db.Close()
 
-	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ", Name: "亮生活 / Bright Side"}
+	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ", Name: "亮生活 / Bright Side", Rank: -1}
 	if err = InsertChannel(db, c); err != nil {
 		t.Errorf("err: %+v", err)
 	}
@@ -22,8 +22,8 @@ func TestInsertChannel(t *testing.T) {
 	if err := SelectChannelByCid(db, cc); err != nil {
 		t.Errorf("err: %+v", err)
 	} else {
-		if cc.Name != "亮生活 / Bright Side" {
-			t.Errorf("got: %s", c.Name)
+		if cc.Name != "亮生活 / Bright Side" && cc.Rank != -1 {
+			t.Errorf("got: %s, %v", cc.Name, cc.Rank)
 		}
 	}
 }
@@ -38,8 +38,8 @@ func TestSelectChannelName(t *testing.T) {
 	if err := SelectChannelByCid(db, c); err != nil {
 		t.Errorf("err: %+v", err)
 	} else {
-		if c.Name != "亮生活 / Bright Side" {
-			t.Errorf("got: %s", c.Name)
+		if c.Name != "亮生活 / Bright Side" && c.Rank != -1 {
+			t.Errorf("got: %s, %v", c.Name, c.Rank)
 		}
 	}
 }
@@ -64,7 +64,7 @@ func TestInsertOrUpdateChannel(t *testing.T) {
 	}
 	defer db.Close()
 
-	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ", Name: "亮生活 / Bright Side"}
+	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ", Name: "亮生活 / Bright Side", Rank: 1}
 	if err = InsertOrUpdateChannel(db, c); err != nil {
 		t.Errorf("err: %+v", err)
 	}
@@ -72,8 +72,8 @@ func TestInsertOrUpdateChannel(t *testing.T) {
 	if err := SelectChannelByCid(db, cc); err != nil {
 		t.Errorf("err: %+v", err)
 	} else {
-		if cc.Name != "亮生活 / Bright Side" {
-			t.Errorf("got: %s", c.Name)
+		if cc.Name != "亮生活 / Bright Side" && cc.Rank != 1 {
+			t.Errorf("got: %s, %v", cc.Name, cc.Rank)
 		}
 	}
 

@@ -7,6 +7,34 @@ import (
 	"github.com/pkg/errors"
 )
 
+func SelectVideosFromTo(db *sql.DB, vs *pb.Videos) (*pb.Videos, error) {
+	var id, title, description, duration, cid, cname, last_updated sql.NullString
+	rows, err := db.Query("SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid = c.id WHERE v.last_updated>? AND v.last_updated<? order by cid;", vs.After, vs.Before)
+	if err != nil {
+		return nil, errors.WithMessage(err, "SelectVideosFromTo error")
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := rows.Scan(&id, &title, &description, &duration, &cid, &cname, &last_updated); err != nil {
+			return nil, errors.WithMessage(err, "SelectVideosFromTo query error")
+		}
+		vs.Videos = append(vs.Videos, &pb.Video{
+			Id:          id.String,
+			Title:       title.String,
+			Description: description.String,
+			Duration:    duration.String,
+			Cid:         cid.String,
+			Cname:       cname.String,
+			LastUpdated: last_updated.String,
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, errors.WithMessage(err, "SelectVideosFromTo rows error")
+	}
+	return vs, nil
+}
+
 func SelectVideosByCid(db *sql.DB, channelId string) ([]*pb.Video, error) {
 	var id, title, description, duration, cid, cname, last_updated sql.NullString
 
@@ -21,7 +49,8 @@ func SelectVideosByCid(db *sql.DB, channelId string) ([]*pb.Video, error) {
 		if err := rows.Scan(&id, &title, &description, &duration, &cid, &cname, &last_updated); err != nil {
 			return nil, errors.WithMessage(err, "SelectVideosByCid rows.Scan error")
 		}
-		videos = append(videos, &pb.Video{Id: id.String,
+		videos = append(videos, &pb.Video{
+			Id:          id.String,
 			Title:       title.String,
 			Description: description.String,
 			Duration:    duration.String,

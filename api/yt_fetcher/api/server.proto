@@ -28,8 +28,9 @@ service YoutubeFetcher{
 message Channel{
     string id = 1; 
     string name = 2;
-    string last_updated = 3;
-    repeated string vids = 4;
+    int32 rank = 3;
+    string last_updated = 4;
+    repeated string vids = 5;
 }
 
 message Channels{
