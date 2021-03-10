@@ -17,14 +17,12 @@ func TestSearchVideos(t *testing.T) {
 	}
 	defer db.Close()
 
-	vs, err := SearchVideos(db, &pb.Videos{}, []string{"5", "4"}...)
+	vs, err := SearchVideos(db, &pb.Videos{}, []string{"1", "2"}...)
 	if err != nil {
 		t.Error(err)
 	}
 
-	for _, v := range vs.Videos {
-		fmt.Println(v.Title)
-	}
+	fmt.Println(len(vs.Videos))
 }
 
 func TestSelectVideosFromTo(t *testing.T) {
