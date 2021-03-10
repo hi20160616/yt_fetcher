@@ -10,20 +10,33 @@ import (
 // Search just search keywords is contained in title or description
 // TODO: pass test
 func SearchVideos(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, error) {
-	query := "SELECT v.id, v.title, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c ON v.cid = c.id"
-	condition := "v.title LIKE '%{title}%' OR v.description LIKE '%{description}%'"
+	query := "SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c ON v.cid = c.id"
 	if len(keywords) != 0 {
 		query += " WHERE "
 	}
+	condition := "v.title LIKE '%?%' OR v.description LIKE '%?%'"
+
+	myQuery := func(query string, args ...interface{}) (*sql.Rows, error) {
+		q, err := db.Prepare(query)
+		if err != nil {
+			return nil, err
+		}
+		return q.Query(args...)
+	}
+
+	ws := []string{}
 	for i, w := range keywords {
 		if i != 0 {
 			query += " OR "
 		}
+		// query += fmt.Sprintf(condition+";", w, w)
 		query += condition
+		ws = append(ws, w, w)
 	}
 
 	var id, title, description, duration, cid, cname, last_updated sql.NullString
-	rows, err := db.Query(prepare)
+	// fmt.Println(query)
+	rows, err := myQuery(query, ws)
 	if err != nil {
 		return nil, errors.WithMessage(err, "Search error")
 	}
