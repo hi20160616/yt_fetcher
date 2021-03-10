@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"database/sql"
-	"fmt"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 	"github.com/pkg/errors"
@@ -10,10 +9,17 @@ import (
 
 // Search just search keywords is contained in title or description
 // TODO: pass test
-func Search(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, error) {
-	prepare := "SELECT v.id, v.title, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c ON v.cid = c.id"
-	for _, w := range keywords {
-		prepare += fmt.Sprintf("WHERE v.title LIKE '%%%s%%' OR v.description LIKE '%%%s%%'", w, w)
+func SearchVideos(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, error) {
+	query := "SELECT v.id, v.title, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c ON v.cid = c.id"
+	condition := "v.title LIKE '%{title}%' OR v.description LIKE '%{description}%'"
+	if len(keywords) != 0 {
+		query += " WHERE "
+	}
+	for i, w := range keywords {
+		if i != 0 {
+			query += " OR "
+		}
+		query += condition
 	}
 
 	var id, title, description, duration, cid, cname, last_updated sql.NullString

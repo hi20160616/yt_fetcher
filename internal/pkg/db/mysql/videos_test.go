@@ -10,6 +10,23 @@ import (
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 )
 
+func TestSearchVideos(t *testing.T) {
+	db, err := NewDBCase()
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+
+	vs, err := SearchVideos(db, &pb.Videos{}, "5")
+	if err != nil {
+		t.Error(err)
+	}
+
+	for _, v := range vs.Videos {
+		fmt.Println(v.Title)
+	}
+}
+
 func TestSelectVideosFromTo(t *testing.T) {
 	db, err := NewDBCase()
 	if err != nil {
