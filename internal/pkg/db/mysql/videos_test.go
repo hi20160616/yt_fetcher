@@ -17,7 +17,7 @@ func TestSearchVideos(t *testing.T) {
 	}
 	defer db.Close()
 
-	vs, err := SearchVideos(db, &pb.Videos{}, []string{"1", "2"}...)
+	vs, err := SearchVideos(db, &pb.Videos{}, "5")
 	if err != nil {
 		t.Error(err)
 	}

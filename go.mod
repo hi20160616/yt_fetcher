@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/go-sql-driver/mysql v1.5.0
+	github.com/golang/protobuf v1.4.2
 	github.com/hi20160616/exhtml v0.0.0-20210202082235-6cd27713f638
 	github.com/kkdai/youtube/v2 v2.4.0
 	github.com/kr/pretty v0.2.0 // indirect

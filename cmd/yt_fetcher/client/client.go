@@ -13,7 +13,7 @@ import (
 func main() {
 	conn, err := grpc.Dial("localhost:10000", grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
-		// log.Fatalf("did not connect: %v", err)
+		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
 	c := pb.NewYoutubeFetcherClient(conn)
@@ -21,14 +21,22 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 	defer cancel()
 
-	// get channel name: pass test
-	cid := "UCMUnInmOkrWN4gof9KlhNmQ"
-	channel := &pb.Channel{Id: cid}
-	channel, err = c.GetSetCname(ctx, channel)
+	// search videos
+	vs := &pb.Videos{Keywords: []string{"5"}}
+	vs, err = c.SearchVideos(ctx, vs)
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 	}
-	fmt.Println(channel.Name)
+	fmt.Println(vs)
+
+	// get channel name: pass test
+	// cid := "UCMUnInmOkrWN4gof9KlhNmQ"
+	// channel := &pb.Channel{Id: cid}
+	// channel, err = c.GetSetCname(ctx, channel)
+	// if err != nil {
+	//         log.Println(err)
+	// }
+	// fmt.Println(channel.Name)
 
 	// get channel: pass test
 	// cid := "UCMUnInmOkrWN4gof9KlhNmQ"

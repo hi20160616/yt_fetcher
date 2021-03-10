@@ -30,9 +30,14 @@ func (fr *fetcherRepo) NewVideo(id string) (*pb.Video, error) {
 	return v, nil
 }
 
-// TODO: implement
+// SearchVideos select all videos match the keywords,
+// If no vs.Keywords provided, it'll return all the videos in table of database.
 func (fr *fetcherRepo) SearchVideos(vs *pb.Videos) (*pb.Videos, error) {
-	return nil, nil
+	dc, err := db.NewDBCase()
+	if err != nil {
+		return nil, err
+	}
+	return db.SearchVideos(dc, vs, vs.Keywords...)
 }
 
 // GetVideo get video info if it's Id is currect

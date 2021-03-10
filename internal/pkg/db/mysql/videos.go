@@ -8,7 +8,6 @@ import (
 )
 
 // Search just search keywords is contained in title or description
-// TODO: pass test
 func SearchVideos(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, error) {
 	// query prapare
 	query := `SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated
@@ -17,7 +16,7 @@ func SearchVideos(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, er
 		query += " WHERE "
 	}
 	condition := "v.title LIKE ? OR v.description LIKE ?"
-	args := []string{}
+	args := []interface{}{}
 	for i, v := range keywords {
 		if i != 0 {
 			query += " OR "
@@ -26,17 +25,15 @@ func SearchVideos(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, er
 		args = append(args, "%"+v+"%", "%"+v+"%")
 	}
 
-	var id, title, description, duration, cid, cname, last_updated sql.NullString
-	is := make([]interface{}, len(args))
-	for i, v := range args {
-		is[i] = v
-	}
-	rows, err := db.Query(query, is...)
+	// query
+	rows, err := db.Query(query, args...)
 	if err != nil {
 		return nil, errors.WithMessage(err, "Search error")
 	}
 	defer rows.Close()
 
+	// populate
+	var id, title, description, duration, cid, cname, last_updated sql.NullString
 	for rows.Next() {
 		if err := rows.Scan(&id, &title, &description, &duration, &cid, &cname, &last_updated); err != nil {
 			return nil, errors.WithMessage(err, "Search Scan error")
