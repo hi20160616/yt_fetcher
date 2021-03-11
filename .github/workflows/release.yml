@@ -15,20 +15,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-
-    - name: Set up Go
-      uses: actions/setup-go@v2
+    - uses: actions/setup-go@v2
       with:
-        go-version: 1.15
+        go-version: '^1.13.1' # The Go version to download (if necessary) and use.
     
-    - name: Prepare
+    - name: Go mod
       run: go mod tidy
 
     - name: Build and Package
-      run: make build && make package
+      run: make build
     
     - name: Upload assets
       uses: actions/upload-artifact@v2
       with:
-        name: myapp
+        name: yt_fetcher
         path: dist/*.tar.gz
