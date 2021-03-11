@@ -1,12 +1,17 @@
 build:
-	cd cmd/yt_fetcher/server && go build -o ../../../bin/yt_fetcher_s && cd ../../../ \
-		&& cd cmd/yt_fetcher/client && go build -o ../../../bin/yt_fetcher_c && cd ../../../
+	rm -rf bin/ \
+	       	&& go build -o ./bin/yt_fetcher_server cmd/yt_fetcher/server/server.go \
+		&& go build -o ./bin/yt_fetcher_manager cmd/yt_fetcher/manager/manager.go \
+	       	&& go build -o ./bin/yt_fetcher_jobs cmd/yt_fetcher/jobs/jobs.go
 
 mysql:
 	docker start yt_fetcher
 
 run:
-	./bin/yt_fetcher_s
+	./bin/yt_fetcher_server
 
-test:
-	./bin/yt_fetcher_c
+manage:
+	./bin/yt_fetcher_manager
+
+job:
+	./bin/yt_fetcher_jobs
