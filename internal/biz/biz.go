@@ -37,9 +37,8 @@ func (fc *FetcherCase) GetVideoIds(c *pb.Channel) (*pb.Channel, error) {
 	return c, nil
 }
 
-// TODO: implement
 func (fc *FetcherCase) SearchVideos(vs *pb.Videos) (*pb.Videos, error) {
-	return nil, nil
+	return fc.repo.SearchVideos(vs)
 }
 
 func (fc *FetcherCase) GetVideos(c *pb.Channel) (*pb.Videos, error) {

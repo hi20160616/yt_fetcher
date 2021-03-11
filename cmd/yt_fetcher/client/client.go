@@ -21,13 +21,14 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 	defer cancel()
 
-	// search videos
-	vs := &pb.Videos{Keywords: []string{"5"}}
+	// search videos: pass test
+	vs := &pb.Videos{Keywords: []string{"老高"}}
 	vs, err = c.SearchVideos(ctx, vs)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(vs)
+	fmt.Println(len(vs.Videos))
+	fmt.Println(vs.Keywords)
 
 	// get channel name: pass test
 	// cid := "UCMUnInmOkrWN4gof9KlhNmQ"

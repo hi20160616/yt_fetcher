@@ -171,3 +171,13 @@ func TestGetVideosFromTo(t *testing.T) {
 		fmt.Println(v.Cname, "\t", v.Title)
 	}
 }
+
+func TestSearchVideos(t *testing.T) {
+	fr := NewFetcherRepo()
+	vs := &pb.Videos{Keywords: []string{"老高"}}
+	vs, err := fr.SearchVideos(vs)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(len(vs.Videos))
+}
