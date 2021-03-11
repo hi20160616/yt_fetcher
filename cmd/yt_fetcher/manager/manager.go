@@ -8,10 +8,7 @@ import (
 	"os"
 	"strings"
 
-	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
-	"github.com/hi20160616/yt_fetcher/internal/biz"
-	"github.com/hi20160616/yt_fetcher/internal/data"
-	"github.com/hi20160616/yt_fetcher/internal/pkg/db/mysql"
+	"github.com/hi20160616/yt_fetcher/internal/job"
 )
 
 func menu() {
@@ -35,14 +32,14 @@ func main() {
 			scanner.Scan()
 			cid = scanner.Text()
 			fmt.Printf(">> ADD or UPDATE channel by id: `%s`\n", cid)
-			addOrUpdateChannel(cid)
+			job.AddOrUpdateChannel(cid)
 			fmt.Println("done.\n------------------------------------------------------")
 			menu()
 			continue
 		case "2":
 			fmt.Println(">> Update channels")
 			log.Println("Start!")
-			updateChannel(false)
+			job.UpdateChannels(false)
 			log.Println("done.")
 			fmt.Println("------------------------------------------------------")
 			menu()
@@ -56,7 +53,7 @@ func main() {
 			answer := scanner.Text()
 			if strings.ToLower(strings.TrimSpace(answer)) == "y" {
 				log.Println("Greedy Update Start!")
-				updateChannel(true)
+				job.UpdateChannels(true)
 				log.Println("done")
 				fmt.Println("------------------------------------------------------")
 			}
@@ -67,7 +64,7 @@ func main() {
 			scanner.Scan()
 			cid = scanner.Text()
 			fmt.Printf(">> DEL channel by id: `%s`\n", cid)
-			delChannel(cid)
+			job.DelChannel(cid)
 			fmt.Println("done.\n------------------------------------------------------")
 			menu()
 			continue
@@ -82,39 +79,4 @@ func main() {
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 	}
-}
-
-func addOrUpdateChannel(id string) error {
-	dc, err := mysql.NewDBCase()
-	if err != nil {
-		return err
-	}
-	defer dc.Close()
-
-	c := &pb.Channel{Id: id}
-	// get info from source
-	c, err = data.GetChannelFromSource(c)
-	// storage
-	return mysql.InsertOrUpdateChannel(dc, c)
-}
-
-func delChannel(id string) error {
-	fr := data.NewFetcherRepo()
-	return fr.DelChannel(&pb.Channel{Id: id})
-}
-
-func updateChannel(greedy bool) error {
-	fr := data.NewFetcherRepo()
-	fc := biz.NewFetcherCase(fr)
-
-	// 1. get cids from database
-	cs := &pb.Channels{}
-	cs, err := fc.GetChannels(cs)
-	if err != nil {
-		return err
-	}
-	// 2. for range cids, get vids from video pages where cid is
-	fc.SetGreedy(greedy)
-	err = fc.UpdateChannels(cs, fc.GetGreedy())
-	return nil
 }

@@ -1,4 +1,4 @@
-package main
+package job
 
 import (
 	"testing"
@@ -23,7 +23,7 @@ func TestAddOrUpdateChannel(t *testing.T) {
 	defer dc.Close()
 
 	for _, tc := range tcs {
-		if err := addOrUpdateChannel(tc.got.Id); err != nil {
+		if err := AddOrUpdateChannel(tc.got.Id); err != nil {
 			t.Error(err)
 		}
 		if err := mysql.SelectChannelByCid(dc, tc.got); err != nil {
