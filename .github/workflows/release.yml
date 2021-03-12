@@ -1,13 +1,13 @@
 name: Go
 
 on:
-  push:
-    tags:
-      - '*'
   # push:
-  #   branches: [ release ]
-  # pull_request:
-  #   branches: [ release ]
+  #   tags:
+  #     - '*'
+  push:
+    branches: [ release ]
+  pull_request:
+    branches: [ release ]
 
 jobs:
 

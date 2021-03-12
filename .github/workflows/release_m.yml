@@ -1,0 +1,48 @@
+name: Go
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+
+  publish:
+    name: Publish for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            source_file_name: yt_fetcher_linux_amd64.tar.gz
+            os_name: linux_amd64
+          - os: windows-latest
+            source_file_name: yt_fetcher_windows_amd64.tar.gz
+            os_name: windows_amd64
+          - os: macos-latest
+            source_file_name: yt_fetcher_darwin_amd64.tar.gz
+            os_name: darwin_amd64
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-go@v2
+      with:
+        go-version: '^1.13.1' # The Go version to download (if necessary) and use.
+    
+    - name: Go mod
+      run: go mod tidy
+
+    - name: Build and Package
+      run: make build && ls -l ./dist
+    - name: Get latest release version number
+      id: get_version
+      uses: battila7/get-version-action@v2
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ./dist/${{ matrix.source_file_name }}
+        asset_name: yt_fetcher_${{ steps.get_version.outputs.version }}_${{ matrix.os_name }}.tar.gz
+        tag: ${{ github.ref }}
+        overwrite: true
+        body: "first release."

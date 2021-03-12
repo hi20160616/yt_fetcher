@@ -14,22 +14,50 @@ builds:
       - linux
       - windows
       - darwin
+    ignore:
+      - goos: linux
+        goarch: 386
+      - goos: linux
+        goarch: arm64
+      - goos: darwin
+        goarch: 386
+      - goos: darwin
+        goarch: arm64
         
   - main: ./cmd/yt_fetcher/manager/manager.go
-    id: "server"
+    id: "manager"
     binary: server
     goos:
       - linux
       - windows
       - darwin
+    ignore:
+      - goos: linux
+        goarch: 386
+      - goos: linux
+        goarch: arm64
+      - goos: darwin
+        goarch: 386
+      - goos: darwin
+        goarch: arm64
 
   - main: ./cmd/yt_fetcher/jobs/jobs.go
-    id: "server"
+    id: "jobs"
     binary: server
     goos:
       - linux
       - windows
       - darwin
+    ignore:
+      - goos: linux
+        goarch: 386
+      - goos: linux
+        goarch: arm64
+      - goos: darwin
+        goarch: 386
+      - goos: darwin
+        goarch: arm64
+
 
 archives:
   - replacements:
@@ -41,7 +69,8 @@ archives:
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  name_template: "{{ .Tag }}"
+  # name_template: "{{ .Tag }}-latest"
 changelog:
   sort: asc
   filters:
