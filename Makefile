@@ -2,20 +2,23 @@ build:
 	rm -rf dist/ \
 		&& mkdir dist && cd dist \
 		&& GOOS=darwin GOARCH=amd64 \
-		&& go build -o server_darwin_amd64 ../cmd/yt_fetcher/server/server.go \
-		&& go build -o manager_darwin_amd64 ../cmd/yt_fetcher/manager/manager.go \
-		&& go build -o jobs_darwin_amd64 ../cmd/yt_fetcher/jobs/jobs.go \
+		&& go build -o yt_fetcher_server ../cmd/yt_fetcher/server/server.go \
+		&& go build -o yt_fetcher_manager ../cmd/yt_fetcher/manager/manager.go \
+		&& go build -o yt_fetcher_jobs ../cmd/yt_fetcher/jobs/jobs.go \
+		&& tar -czvf yt_fetcher_darwin_amd64.tar.gz yt_fetcher_server yt_fetcher_manager yt_fetcher_jobs\
+		&& rm yt_fetcher_server yt_fetcher_manager yt_fetcher_jobs \
 		&& GOOS=linux GOARCH=amd64 \
-		&& go build -o server_linux_amd64 ../cmd/yt_fetcher/server/server.go \
-		&& go build -o manager_linux_amd64 ../cmd/yt_fetcher/manager/manager.go \
-		&& go build -o jobs_linux_amd64 ../cmd/yt_fetcher/jobs/jobs.go \
+		&& go build -o yt_fetcher_server ../cmd/yt_fetcher/server/server.go \
+		&& go build -o yt_fetcher_manager ../cmd/yt_fetcher/manager/manager.go \
+		&& go build -o yt_fetcher_jobs ../cmd/yt_fetcher/jobs/jobs.go \
+		&& tar -czvf yt_fetcher_linux_amd64.tar.gz yt_fetcher_server yt_fetcher_manager yt_fetcher_jobs\
+		&& rm yt_fetcher_server yt_fetcher_manager yt_fetcher_jobs \
 		&& GOOS=windows GOARCH=amd64 \
-		&& go build -o server_windows_amd64 ../cmd/yt_fetcher/server/server.go \
-		&& go build -o manager_windows_amd64 ../cmd/yt_fetcher/manager/manager.go \
-		&& go build -o jobs_windows_amd64 ../cmd/yt_fetcher/jobs/jobs.go \
-		&& tar -czvf yt_fetcher_darwin_amd64.tar.gz server_darwin_amd64 manager_darwin_amd64 jobs_darwin_amd64\
-		&& tar -czvf yt_fetcher_linux_amd64.tar.gz server_linux_amd64 manager_linux_amd64 jobs_linux_amd64 \
-		&& tar -czvf yt_fetcher_windows_amd64.tar.gz server_windows_amd64 manager_windows_amd64 jobs_windows_amd64 \
+		&& go build -o yt_fetcher_server.exe ../cmd/yt_fetcher/server/server.go \
+		&& go build -o yt_fetcher_manager.exe ../cmd/yt_fetcher/manager/manager.go \
+		&& go build -o yt_fetcher_jobs.exe ../cmd/yt_fetcher/jobs/jobs.go \
+		&& tar -czvf yt_fetcher_windows_amd64.tar.gz yt_fetcher_server.exe yt_fetcher_manager.exe yt_fetcher_jobs.exe\
+		&& rm yt_fetcher_server.exe yt_fetcher_manager.exe yt_fetcher_jobs.exe \
 		&& cd ..
 
 mysql:

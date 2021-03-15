@@ -7,9 +7,9 @@ This is a Microservice providing youtube videos info fetch.
 ## MySQL container install
 
 ```
-$ docker pull mysql/mysql-server:latest
-$ docker run -p 3306:3306 --name=yt_fetcher -e MYSQL_ROOT_PASSWORD='rootpassword' -d mysql/mysql-server:latest
-$ docker exec -it yt_fetcher mysql -uroot -prootpassword
+$ sudo docker pull mysql
+$ sudo docker run -p 3306:3306 --name=yt_fetcher -e MYSQL_ROOT_PASSWORD='rootpassword' -d mysql/mysql-server:latest
+$ sudo docker exec -it yt_fetcher mysql -uroot -prootpassword
 mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY '[newpassword]';
 ```
 
