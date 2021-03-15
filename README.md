@@ -64,6 +64,28 @@ CREATE USER 'yt_fetcher'@'%' IDENTIFIED BY 'ytpassword';
 GRANT ALL ON yt_fetcher.* TO 'yt_fetcher'@'%';
 ```
 
+4. Database backup
+
+4.1. mysqldump install
+```
+$ sudo apt install mysql-client-core-8.0
+```
+
+4.2. backup
+
+Refer:
+- https://dev.mysql.com/doc/refman/8.0/en/backup-policy.html
+- https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html
+```
+$ sudo docker exec -it yt_fetcher mysqldump yt_fetcher -u root -p[mysqlrootpassword] > backup-yt_fetcher.sql
+```
+
+5. Database edit
+```
+mysql> UPDATE channels SET `rank`=1;
+```
+
+
 ## SQL Conn Save
 Download enit: https://github.com/hi20160616/enit  
 Then:  

@@ -90,13 +90,13 @@ func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	client := youtube.Client{}
 	video, err := client.GetVideo("https://www.youtube.com/watch?v=" + v.Id)
 	if err != nil {
-		return nil, errors.WithMessage(err, "getVideoFromApi error")
+		return nil, errors.WithMessage(err, "getVideoFromApi error on videoId: "+v.Id)
 	}
 	cid, err := getCid(dc, vid, true)
 	if err != nil {
-		return nil, errors.WithMessage(err, "getVideoFromApi error")
+		return nil, errors.WithMessage(err, "getVideoFromApi error on videoId: "+v.Id)
 	}
-	t := video.Formats.FindByQuality("medium").LastModified
+	t := getLastModified(video)
 	v.Title = video.Title
 	v.Description = video.Description
 	v.Duration = video.Duration.String()
@@ -104,4 +104,21 @@ func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	v.Cname = video.Author
 	v.LastUpdated = t
 	return v, nil
+}
+
+func getLastModified(v *youtube.Video) string {
+	t := v.Formats
+	rt := t.FindByQuality("medium").LastModified
+	if rt == "" {
+		rt = t.FindByQuality("large").LastModified
+		if rt == "" {
+			rt = t.FindByQuality("small").LastModified
+			if rt == "" {
+				rt = t.FindByQuality("hd720").LastModified
+			} else {
+				rt = time.Nanosecond.String()[:16]
+			}
+		}
+	}
+	return rt
 }
