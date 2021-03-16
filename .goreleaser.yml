@@ -26,7 +26,7 @@ builds:
         
   - main: ./cmd/yt_fetcher/manager/manager.go
     id: "manager"
-    binary: server
+    binary: manager
     goos:
       - linux
       - windows
@@ -43,7 +43,7 @@ builds:
 
   - main: ./cmd/yt_fetcher/jobs/jobs.go
     id: "jobs"
-    binary: server
+    binary: jobs
     goos:
       - linux
       - windows
