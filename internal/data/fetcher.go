@@ -82,7 +82,6 @@ func getCidFromSource(vid string) (string, error) {
 	re := regexp.MustCompile(`","externalChannelId":"(.*?)","availableCountries":`)
 	rs := re.FindAllStringSubmatch(r, -1)
 	return rs[0][1], nil
-
 }
 
 func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
@@ -106,19 +105,12 @@ func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	return v, nil
 }
 
-func getLastModified(v *youtube.Video) string {
-	t := v.Formats
-	rt := t.FindByQuality("medium").LastModified
-	if rt == "" {
-		rt = t.FindByQuality("large").LastModified
-		if rt == "" {
-			rt = t.FindByQuality("small").LastModified
-			if rt == "" {
-				rt = t.FindByQuality("hd720").LastModified
-			} else {
-				rt = time.Nanosecond.String()[:16]
-			}
+func getLastModified(v *youtube.Video) (rt string) {
+	fs := v.Formats
+	for _, f := range fs {
+		if f.LastModified != "" {
+			return f.LastModified
 		}
 	}
-	return rt
+	return time.Nanosecond.String()[:16]
 }
