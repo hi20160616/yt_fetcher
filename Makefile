@@ -40,6 +40,8 @@ goreleaser_action:
 goreleaser_local:
 	goreleaser --snapshot --skip-publish --rm-dist	
 
+goreleaser:
+	goreleaser --rm-dist	
 
 git:
 	git add . \
