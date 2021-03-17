@@ -288,13 +288,15 @@ func (fr *fetcherRepo) UpdateChannels(cs *pb.Channels, greedy bool) error {
 // updateChannelFromSource update channel by source
 // greedy true: get videos from api directly
 // greedy false: get videos from api if only it is not exist in table videos
-// 1. get vids from the channel source every request
-// 2. for range vids to get and set videos
-//    2.1. if greedy, get video directly from api and InsertOrUpdateVideo
-//    2.2. if not greedy
-//         2.2.1. if vid not exist in videos, getVideoFromApi and InsertOrUpdateVideo
-//         2.2.2. if vid exist in videos, pass the loop this time.
 func updateChannelFromSource(dc *sql.DB, c *pb.Channel, greedy bool) error {
+	// Code logic
+	// 1. get vids from the channel source every request
+	// 2. for range vids to get and set videos
+	//    2.1. if greedy, get video directly from api and InsertOrUpdateVideo
+	//    2.2. if not greedy
+	//         2.2.1. if vid not exist in videos, getVideoFromApi and InsertOrUpdateVideo
+	//         2.2.2. if vid exist in videos, pass the loop this time.
+
 	// must greedy here, so get Vids from source every request
 	c, err := getVids(dc, c, true)
 	if err != nil {
@@ -310,16 +312,19 @@ func updateChannelFromSource(dc *sql.DB, c *pb.Channel, greedy bool) error {
 	}
 	for _, vid := range c.Vids {
 		if greedy {
-			do(vid)
+			err = do(vid)
 		} else {
 			exist, err := db.VidExist(dc, vid)
 			if err != nil {
 				return err
 			}
 			if !exist {
-				do(vid)
+				err = do(vid)
 			}
 		}
+	}
+	if err != nil {
+		return err
 	}
 	return db.UpdateChannel(dc, c) // actualy update chananel last_updated field.
 }

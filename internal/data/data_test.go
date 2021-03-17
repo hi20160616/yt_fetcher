@@ -81,7 +81,7 @@ func TestGetVideoPrivate(t *testing.T) {
 // go test -test.run=^TestGetVideoIds$
 func TestGetVids(t *testing.T) {
 	fr := NewFetcherRepo()
-	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ"}
+	c := &pb.Channel{Id: "UC_IEcnNeHc_bwd92Ber-lew"}
 
 	c, err := fr.GetVids(c, false)
 	if err != nil {
@@ -149,7 +149,7 @@ func TestGetChannels(t *testing.T) {
 }
 
 func TestUpdateChannels(t *testing.T) {
-	c := &pb.Channel{Id: "UCMUnInmOkrWN4gof9KlhNmQ"}
+	c := &pb.Channel{Id: "UC_IEcnNeHc_bwd92Ber-lew"}
 	dc, err := db.NewDBCase()
 	if err != nil {
 		t.Error(err)
