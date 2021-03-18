@@ -42,15 +42,14 @@ func main() {
 }
 
 func start(ctx context.Context) error {
-	// Funs:
-	// 1. UpdateChannels every determined time
-	// 2. TODO: Update special channels by ids
+	// Funs: updateChannels every determined time
 	for {
-		log.Println("Channels update Start ...")
-		if err := job.UpdateChannels(false); err != nil {
-			return err
+		// Act on the hour
+		if time.Now().Minute() == 0 {
+			log.Println("Channels update Start ...")
+			if err := job.UpdateChannels(false); err != nil {
+				return err
+			}
 		}
-		log.Println("Sleep 2 hours...")
-		time.Sleep(2 * time.Hour)
 	}
 }
