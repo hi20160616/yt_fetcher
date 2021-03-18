@@ -13,7 +13,7 @@ service YoutubeFetcher{
     rpc GetVideoIds(Channel) returns (Channel) {}
     // Get videos info by page url set in channel
     rpc GetVideos(Channel) returns (Videos){}
-    // Get videos info updated from time a to time b
+    // Get videos info updated from time a to time b and rank != -1
     rpc GetVideosFromTo(Videos) returns (Videos){}
     // Get video info by videoId
     rpc GetVideo(Video) returns (Video){}
