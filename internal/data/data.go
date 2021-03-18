@@ -133,6 +133,7 @@ func (fr *fetcherRepo) GetVids(c *pb.Channel, greedy bool) (*pb.Channel, error) 
 	return getVids(dc, c, greedy)
 }
 
+// GetVideosFromTo get the last 24 hours videos
 func (fr *fetcherRepo) GetVideosFromTo(vs *pb.Videos) (*pb.Videos, error) {
 	dc, err := db.NewDBCase()
 	if err != nil {
@@ -140,12 +141,12 @@ func (fr *fetcherRepo) GetVideosFromTo(vs *pb.Videos) (*pb.Videos, error) {
 	}
 	defer dc.Close()
 
-	timeStamp := func(days int) string {
-		t := time.Now().AddDate(0, 0, days).UnixNano()
+	timeStamp := func(minutes int) string {
+		t := time.Now().Add(time.Duration(minutes) * time.Minute).UnixNano()
 		return strconv.FormatInt(t, 10)[:16]
 	}
 
-	vs.After = timeStamp(-3) // 3 days ago
+	vs.After = timeStamp(-1 * 24 * 60) // 1 days ago
 	vs.Before = timeStamp(0)
 	return db.SelectVideosFromTo(dc, vs)
 }

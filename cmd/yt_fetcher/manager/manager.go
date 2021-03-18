@@ -1,4 +1,5 @@
 // The CLI for data manage
+// TODO: remote control, edit channel individual
 package main
 
 import (
