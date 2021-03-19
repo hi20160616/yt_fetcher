@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/hi20160616/exhtml"
+	youtube "github.com/hi20160616/youtube/v2"
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
-	youtube "github.com/kkdai/youtube/v2"
 	"github.com/pkg/errors"
 )
 
@@ -87,6 +87,7 @@ func getCidFromSource(vid string) (string, error) {
 func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	v := &pb.Video{Id: vid}
 	client := youtube.Client{}
+	// TODO: get thumbnail info
 	video, err := client.GetVideo("https://www.youtube.com/watch?v=" + v.Id)
 	if err != nil {
 		return nil, errors.WithMessage(err, "getVideoFromApi error on videoId: "+v.Id)

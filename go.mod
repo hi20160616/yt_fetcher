@@ -17,3 +17,5 @@ require (
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c // indirect
 )
+
+replace github.com/kkdai/youtube/v2 2.5.0 => github.com/hi20160616/youtube/v2 v2.5.1
