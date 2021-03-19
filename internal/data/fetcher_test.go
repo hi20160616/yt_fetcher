@@ -36,6 +36,9 @@ func TestGetVideoFromApi(t *testing.T) {
 	if got.Title != want {
 		t.Errorf("got %v, want %v", got.Title, want)
 	}
+	for _, v := range got.Thumbnails {
+		fmt.Println(v)
+	}
 }
 
 func TestGetCidFromSource(t *testing.T) {

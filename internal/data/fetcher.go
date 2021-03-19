@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/hi20160616/exhtml"
-	youtube "github.com/hi20160616/youtube/v2"
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
+	youtube "github.com/kkdai/youtube/v2"
 	"github.com/pkg/errors"
 )
 
@@ -98,6 +98,13 @@ func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	}
 	t := getLastModified(video)
 	v.Title = video.Title
+	for _, thumbnail := range video.Thumbnails {
+		v.Thumbnails = append(v.Thumbnails,
+			&pb.Thumbnail{
+				Width:  int32(thumbnail.Width),
+				Height: int32(thumbnail.Height),
+				URL:    thumbnail.URL})
+	}
 	v.Description = video.Description
 	v.Duration = video.Duration.String()
 	v.Cid = cid

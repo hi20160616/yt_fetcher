@@ -42,11 +42,18 @@ message Channels{
 message Video{
     string id = 1;
     string title = 2;
-    string description = 3;
-    string duration = 4;
-    string cid = 5;
-    string cname = 6;
-    string last_updated = 7;
+    repeated Thumbnail thumbnails = 3;
+    string description = 4;
+    string duration = 5;
+    string cid = 6;
+    string cname = 7;
+    string last_updated = 8;
+}
+
+message Thumbnail{
+    int32 Width = 1;
+    int32 Height = 2;
+    string URL = 3;
 }
 
 message Videos{

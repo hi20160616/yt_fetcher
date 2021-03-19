@@ -11,7 +11,6 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // YoutubeFetcherClient is the client API for YoutubeFetcher service.
@@ -22,7 +21,7 @@ type YoutubeFetcherClient interface {
 	GetVideoIds(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Channel, error)
 	// Get videos info by page url set in channel
 	GetVideos(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Videos, error)
-	// Get videos info updated from time a to time b
+	// Get videos info updated from time a to time b and rank != -1
 	GetVideosFromTo(ctx context.Context, in *Videos, opts ...grpc.CallOption) (*Videos, error)
 	// Get video info by videoId
 	GetVideo(ctx context.Context, in *Video, opts ...grpc.CallOption) (*Video, error)
@@ -124,7 +123,7 @@ type YoutubeFetcherServer interface {
 	GetVideoIds(context.Context, *Channel) (*Channel, error)
 	// Get videos info by page url set in channel
 	GetVideos(context.Context, *Channel) (*Videos, error)
-	// Get videos info updated from time a to time b
+	// Get videos info updated from time a to time b and rank != -1
 	GetVideosFromTo(context.Context, *Videos) (*Videos, error)
 	// Get video info by videoId
 	GetVideo(context.Context, *Video) (*Video, error)

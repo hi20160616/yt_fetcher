@@ -18,4 +18,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c // indirect
 )
 
-replace github.com/kkdai/youtube/v2 2.5.0 => github.com/hi20160616/youtube/v2 v2.5.1
+replace github.com/kkdai/youtube/v2 v2.5.0 => github.com/hi20160616/youtube/v2 v2.5.1
