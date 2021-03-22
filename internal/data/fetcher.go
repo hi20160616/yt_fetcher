@@ -2,6 +2,7 @@ package data
 
 import (
 	"database/sql"
+	"fmt"
 	"html"
 	"net/url"
 	"regexp"
@@ -99,11 +100,15 @@ func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	t := getLastModified(video)
 	v.Title = video.Title
 	for _, thumbnail := range video.Thumbnails {
+		w, h := int32(thumbnail.Width), int32(thumbnail.Height)
 		v.Thumbnails = append(v.Thumbnails,
 			&pb.Thumbnail{
-				Width:  int32(thumbnail.Width),
-				Height: int32(thumbnail.Height),
-				URL:    thumbnail.URL})
+				Id:     fmt.Sprintf("%s_w%d", v.Id, w),
+				Width:  w,
+				Height: h,
+				URL:    thumbnail.URL,
+				Vid:    v.Id,
+			})
 	}
 	v.Description = video.Description
 	v.Duration = video.Duration.String()

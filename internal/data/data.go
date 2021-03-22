@@ -57,7 +57,7 @@ func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 
 // getVideo get video info and set v by v.Id
 // greedy: If greedy and video info not in db, it will obtain cid by api source and others by youtube pkg
-// then INSERT OR UPDATE TABLES: videos and channels.
+// then INSERT OR UPDATE TABLES: videos, thumbnails and channels.
 func getVideo(dc *sql.DB, v *pb.Video, greedy bool) (*pb.Video, error) {
 	err := db.SelectVideoByVid(dc, v)
 	if !greedy {

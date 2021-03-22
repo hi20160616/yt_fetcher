@@ -115,6 +115,7 @@ func SelectVideosByCid(db *sql.DB, channelId string) ([]*pb.Video, error) {
 }
 
 // SelectVideoById select video from videos by video id
+// TODO: select should join thumbnails
 func SelectVideoByVid(db *sql.DB, v *pb.Video) error {
 	var title, description, duration, cid, cname, last_updated sql.NullString
 	err := db.QueryRow("SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid=c.id WHERE v.id=?;", v.Id).Scan(&v.Id, &title, &description, &duration, &cid, &cname, &last_updated)

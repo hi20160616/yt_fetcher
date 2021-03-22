@@ -41,6 +41,7 @@ mysql> describe videos;
 | last_updated | varchar(16)  | YES  |     | NULL    |       |
 +--------------+--------------+------+-----+---------+-------+
 6 rows in set (0.01 sec)
+
 mysql> CREATE TABLE channels (`id` VARCHAR(24) NOT NULL, `name` VARCHAR(255), `rank` INT(11), `last_updated` VARCHAR(16), UNIQUE KEY (id));
 Query OK, 0 rows affected, 1 warning (0.01 sec)
 
@@ -54,6 +55,21 @@ mysql> describe channels;
 | last_updated | varchar(16)  | YES  |     | NULL    |       |
 +--------------+--------------+------+-----+---------+-------+
 4 rows in set (0.00 sec)
+
+mysql> CREATE TABLE thumbnails (id varchar(17) NOT NULL, width int, height int, url varchar(255), vid varchar(11), UNIQUE KEY (id));
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> describe thumbnails;
++--------+--------------+------+-----+---------+-------+
+| Field  | Type         | Null | Key | Default | Extra |
++--------+--------------+------+-----+---------+-------+
+| id     | varchar(17)  | NO   | PRI | NULL    |       |
+| width  | int          | YES  |     | NULL    |       |
+| height | int          | YES  |     | NULL    |       |
+| url    | varchar(255) | YES  |     | NULL    |       |
+| vid    | varchar(11)  | YES  |     | NULL    |       |
++--------+--------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
 ```
 
 3. Create User for the database
