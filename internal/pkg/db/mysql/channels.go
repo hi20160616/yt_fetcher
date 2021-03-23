@@ -53,15 +53,12 @@ func SelectChannels(db *sql.DB, cs *pb.Channels) (*pb.Channels, error) {
 }
 
 func InsertChannel(db *sql.DB, c *pb.Channel) error {
-	stmt, err := db.Prepare("INSERT INTO channels (id, name, `rank`, last_updated) values(?,?,?,?)")
+	q := "INSERT INTO channels (id, name, `rank`, last_updated) values(?,?,?,?)"
+	_, err := db.Exec(q, c.Id, c.Name, c.Rank, c.LastUpdated)
 	if err != nil {
 		return errors.WithMessage(err, "InsertChannel stmt Prepare error")
 	}
-	defer stmt.Close()
 	c.LastUpdated = strconv.FormatInt(time.Now().UnixNano(), 10)[:16]
-	if _, err = stmt.Exec(c.Id, c.Name, c.Rank, c.LastUpdated); err != nil {
-		return errors.WithMessage(err, "InsertChannel stmt.Exec error")
-	}
 	return nil
 }
 
@@ -69,14 +66,11 @@ func UpdateChannel(db *sql.DB, c *pb.Channel) error {
 	if c.Id == "" {
 		return errors.New("provide nil id while update channel")
 	}
-	stmt, err := db.Prepare("UPDATE channels SET name=?, `rank`=?, last_updated=? WHERE id=?")
+	q := "UPDATE channels SET name=?, `rank`=?, last_updated=? WHERE id=?"
+	c.LastUpdated = strconv.FormatInt(time.Now().UnixNano(), 10)[:16]
+	_, err := db.Exec(q, c.Name, c.Rank, c.LastUpdated, c.Id)
 	if err != nil {
 		return errors.WithMessage(err, "UpdateChannel stmt Prepare error")
-	}
-	defer stmt.Close()
-	c.LastUpdated = strconv.FormatInt(time.Now().UnixNano(), 10)[:16]
-	if _, err := stmt.Exec(c.Name, c.Rank, c.LastUpdated, c.Id); err != nil {
-		return errors.WithMessage(err, "UpdateChannel stmt.Exec error")
 	}
 	return nil
 }

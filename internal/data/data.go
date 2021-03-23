@@ -58,8 +58,12 @@ func (fr *fetcherRepo) GetVideo(v *pb.Video) (*pb.Video, error) {
 // getVideo get video info and set v by v.Id
 // greedy: If greedy and video info not in db, it will obtain cid by api source and others by youtube pkg
 // then INSERT OR UPDATE TABLES: videos, thumbnails and channels.
+// TODO: need pass test for thumbnails be greedy
 func getVideo(dc *sql.DB, v *pb.Video, greedy bool) (*pb.Video, error) {
-	err := db.SelectVideoByVid(dc, v)
+	v, err := db.SelectVideoByVid(dc, v)
+	if err != nil {
+		return nil, err
+	}
 	if !greedy {
 		return v, err
 	}
@@ -70,7 +74,7 @@ func getVideo(dc *sql.DB, v *pb.Video, greedy bool) (*pb.Video, error) {
 			if err != nil {
 				return nil, err
 			}
-			return v, db.InsertOrUpdateVC(dc, v)
+			return v, db.InsertOrUpdate2(dc, v)
 		}
 		return nil, err
 	}
@@ -80,7 +84,7 @@ func getVideo(dc *sql.DB, v *pb.Video, greedy bool) (*pb.Video, error) {
 		if err != nil {
 			return nil, err
 		}
-		return v, db.InsertOrUpdateVC(dc, v)
+		return v, db.InsertOrUpdate2(dc, v)
 	}
 	return v, nil
 }
@@ -290,42 +294,42 @@ func (fr *fetcherRepo) UpdateChannels(cs *pb.Channels, greedy bool) error {
 // greedy true: get videos from api directly
 // greedy false: get videos from api if only it is not exist in table videos
 func updateChannelFromSource(dc *sql.DB, c *pb.Channel, greedy bool) error {
-	// Code logic
-	// 1. get vids from the channel source every request
-	// 2. for range vids to get and set videos
-	//    2.1. if greedy, get video directly from api and InsertOrUpdateVideo
-	//    2.2. if not greedy
-	//         2.2.1. if vid not exist in videos, getVideoFromApi and InsertOrUpdateVideo
-	//         2.2.2. if vid exist in videos, pass the loop this time.
-
-	// must greedy here, so get Vids from source every request
 	c, err := getVids(dc, c, true)
 	if err != nil {
 		return err
 	}
+
 	do := func(vid string) error {
-		// no matter video is updated in youtube, just get info from source
+		// insert or update videos and thumbnails
 		v, err := getVideoFromApi(dc, vid)
 		if err != nil {
 			return err
 		}
-		return db.InsertOrUpdateVideo(dc, v)
+
+		return db.InsertOrUpdate2(dc, v)
 	}
+
 	for _, vid := range c.Vids {
 		if greedy {
-			err = do(vid)
+			if err = do(vid); err != nil {
+				return err
+			}
 		} else {
-			exist, err := db.VidExist(dc, vid)
+			// continue on exist
+			vExist, err := db.VidExist(dc, vid)
 			if err != nil {
 				return err
 			}
-			if !exist {
-				err = do(vid)
+			tExist, err := db.VideoThumbnailsExist(dc, vid)
+			if err != nil {
+				return err
+			}
+			if !vExist || !tExist {
+				if err = do(vid); err != nil {
+					return err
+				}
 			}
 		}
 	}
-	if err != nil {
-		return err
-	}
-	return db.UpdateChannel(dc, c) // actualy update chananel last_updated field.
+	return err
 }

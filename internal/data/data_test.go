@@ -106,7 +106,7 @@ func TestGetChannels(t *testing.T) {
 	}
 }
 
-func TestUpdateChannels(t *testing.T) {
+func TestUpdateChannelFromSource(t *testing.T) {
 	c := &pb.Channel{Id: "UC_IEcnNeHc_bwd92Ber-lew"}
 	dc, err := db.NewDBCase()
 	if err != nil {
@@ -118,10 +118,16 @@ func TestUpdateChannels(t *testing.T) {
 	}
 }
 
+func TestUpdateChannels(t *testing.T) {
+	fr := NewFetcherRepo()
+	if err := fr.UpdateChannels(&pb.Channels{}, true); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestGetVideosFromTo(t *testing.T) {
 	fr := NewFetcherRepo()
-	vs := &pb.Videos{}
-	vs, err := fr.GetVideosFromTo(vs)
+	vs, err := fr.GetVideosFromTo(&pb.Videos{})
 	if err != nil {
 		t.Error(err)
 	}
@@ -132,7 +138,7 @@ func TestGetVideosFromTo(t *testing.T) {
 
 func TestSearchVideos(t *testing.T) {
 	fr := NewFetcherRepo()
-	vs := &pb.Videos{Keywords: []string{"老高"}}
+	vs := &pb.Videos{Keywords: []string{"English"}}
 	vs, err := fr.SearchVideos(vs)
 	if err != nil {
 		t.Error(err)

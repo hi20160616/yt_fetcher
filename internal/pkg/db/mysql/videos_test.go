@@ -58,16 +58,14 @@ func TestSelectVideosByCid(t *testing.T) {
 	}
 	defer db.Close()
 
-	cid := "UCMUnInmOkrWN4gof9KlhNmQ"
+	cid := "UC_gUM8rL-Lrg6O3adPW9K1g"
 	vs, err := SelectVideosByCid(db, cid)
 	if err != nil {
 		t.Error(err)
 	}
 	flag := false
-	for _, v := range vs {
-		if v.Title == "目前最火的一期，消失的同學，不是平行宇宙也不是曼德拉效應，而是〇〇 | 老高與小茉 Mr & Mrs Gao" {
-			flag = true
-		}
+	for _, v := range vs.Videos {
+		fmt.Println(v)
 	}
 	if !flag {
 		t.Errorf("want: true, got false")
@@ -81,8 +79,8 @@ func TestSelectVideo(t *testing.T) {
 	}
 	defer db.Close()
 
-	got := &pb.Video{Id: "5TW7ALXdlw8"}
-	if err := SelectVideoByVid(db, got); err != nil {
+	got := &pb.Video{Id: "12x-CfvovfQ"}
+	if got, err = SelectVideoByVid(db, got); err != nil {
 		t.Errorf("err: %+v", err)
 	}
 	want := &pb.Video{
@@ -118,15 +116,15 @@ func TestInsertVideo(t *testing.T) {
 
 	// test
 	v := &pb.Video{Id: "5TW7ALXdlw8"}
-	if err := SelectVideoByVid(db, v); err != nil {
+	if got, err := SelectVideoByVid(db, v); err != nil {
 		t.Error(err)
 	} else {
-		if video.Id == v.Id &&
-			video.Title == v.Title &&
-			video.Description == v.Description &&
-			video.Cid == v.Cid &&
-			video.LastUpdated == v.LastUpdated {
-			t.Errorf("want: %+v, got: %+v", video, v)
+		if video.Id == got.Id &&
+			video.Title == got.Title &&
+			video.Description == got.Description &&
+			video.Cid == got.Cid &&
+			video.LastUpdated == got.LastUpdated {
+			t.Errorf("want: %+v, got: %+v", video, got)
 		}
 	}
 }
@@ -169,15 +167,15 @@ func TestInsertOrUpdateVideo(t *testing.T) {
 
 	// test
 	v := &pb.Video{Id: "5TW7ALXdlw8"}
-	if err := SelectVideoByVid(dc, v); err != nil {
+	if got, err := SelectVideoByVid(dc, v); err != nil {
 		t.Error(err)
 	} else {
-		if video.Id == v.Id &&
-			video.Title == v.Title &&
-			video.Description == v.Description &&
-			video.Cid == v.Cid &&
-			video.LastUpdated == v.LastUpdated {
-			t.Errorf("want: %+v, got: %+v", video, v)
+		if video.Id == got.Id &&
+			video.Title == got.Title &&
+			video.Description == got.Description &&
+			video.Cid == got.Cid &&
+			video.LastUpdated == got.LastUpdated {
+			t.Errorf("want: %+v, got: %+v", video, got)
 		}
 	}
 }

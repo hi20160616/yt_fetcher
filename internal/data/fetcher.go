@@ -88,7 +88,6 @@ func getCidFromSource(vid string) (string, error) {
 func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	v := &pb.Video{Id: vid}
 	client := youtube.Client{}
-	// TODO: get thumbnail info
 	video, err := client.GetVideo("https://www.youtube.com/watch?v=" + v.Id)
 	if err != nil {
 		return nil, errors.WithMessage(err, "getVideoFromApi error on videoId: "+v.Id)

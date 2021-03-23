@@ -8,9 +8,10 @@ import (
 )
 
 // Search just search keywords is contained in title or description
+// TODO: pass test
 func SearchVideos(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, error) {
 	// query prapare
-	query := `SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated
+	query := `SELECT v.id, v.title, v.thumbnails, v.description, v.duration, v.cid, c.name AS cname, v.last_updated
 		FROM videos AS v LEFT JOIN channels AS c ON v.cid = c.id`
 	if len(keywords) != 0 {
 		query += " WHERE "
@@ -33,73 +34,75 @@ func SearchVideos(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, er
 	defer rows.Close()
 
 	// populate
-	var id, title, description, duration, cid, cname, last_updated sql.NullString
-	for rows.Next() {
-		if err := rows.Scan(&id, &title, &description, &duration, &cid, &cname, &last_updated); err != nil {
-			return nil, errors.WithMessage(err, "Search Scan error")
-		}
-		vs.Videos = append(vs.Videos, &pb.Video{
-			Id:          id.String,
-			Title:       title.String,
-			Description: description.String,
-			Duration:    duration.String,
-			Cid:         cid.String,
-			Cname:       cname.String,
-			LastUpdated: last_updated.String,
-		})
-	}
-	if err := rows.Err(); err != nil {
-		return nil, errors.WithMessage(err, "Search rows error")
+	if err = selectVideos(db, vs, rows); err != nil {
+		return nil, err
 	}
 	return vs, nil
 }
 
 // SelectVideosFromTo select videos left join channels where rank != -1
+// TODO: pass test
 func SelectVideosFromTo(db *sql.DB, vs *pb.Videos) (*pb.Videos, error) {
-	var id, title, description, duration, cid, cname, last_updated sql.NullString
-	rows, err := db.Query("SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid = c.id WHERE v.last_updated>? AND v.last_updated<? AND c.rank<>-1 order by cid;", vs.After, vs.Before)
+	q := "SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid = c.id WHERE v.last_updated>? AND v.last_updated<? AND c.rank<>-1 order by cid;"
+	rows, err := db.Query(q, vs.After, vs.Before)
 	if err != nil {
 		return nil, errors.WithMessage(err, "SelectVideosFromTo error")
 	}
 	defer rows.Close()
 
-	for rows.Next() {
-		if err := rows.Scan(&id, &title, &description, &duration, &cid, &cname, &last_updated); err != nil {
-			return nil, errors.WithMessage(err, "SelectVideosFromTo query error")
-		}
-		vs.Videos = append(vs.Videos, &pb.Video{
-			Id:          id.String,
-			Title:       title.String,
-			Description: description.String,
-			Duration:    duration.String,
-			Cid:         cid.String,
-			Cname:       cname.String,
-			LastUpdated: last_updated.String,
-		})
-	}
-	if err := rows.Err(); err != nil {
-		return nil, errors.WithMessage(err, "SelectVideosFromTo rows error")
+	if err = selectVideos(db, vs, rows); err != nil {
+		return nil, err
 	}
 	return vs, nil
 }
 
-func SelectVideosByCid(db *sql.DB, channelId string) ([]*pb.Video, error) {
-	var id, title, description, duration, cid, cname, last_updated sql.NullString
-
-	rows, err := db.Query("SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid=c.id WHERE c.id=?;", channelId)
+func SelectVideosByCid(db *sql.DB, channelId string) (*pb.Videos, error) {
+	q := "SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid=c.id WHERE c.id=?;"
+	rows, err := db.Query(q, channelId)
 	if err != nil {
 		return nil, errors.WithMessage(err, "SelectVideosByCid query error")
 	}
 	defer rows.Close()
 
-	videos := make([]*pb.Video, 0)
+	videos := &pb.Videos{}
+	if err = selectVideos(db, videos, rows); err != nil {
+		return nil, err
+	}
+	return videos, nil
+}
+
+// SelectVideoById select video from videos by video id
+func SelectVideoByVid(db *sql.DB, v *pb.Video) (*pb.Video, error) {
+	q := "SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid=c.id WHERE v.id=?;"
+	rows, err := db.Query(q, v.Id)
+	if err != nil {
+		return nil, err
+	}
+	vs := &pb.Videos{}
+	if err = selectVideos(db, vs, rows); err != nil {
+		return nil, err
+	}
+	if len(vs.Videos) == 0 {
+		return nil, errors.New("SelectVideoByVid got nil from id: " + v.Id)
+	}
+	return vs.Videos[0], nil
+}
+
+func selectVideos(db *sql.DB, videos *pb.Videos, rows *sql.Rows) error {
+	var id, title, description, duration, cid, cname, last_updated sql.NullString
 	for rows.Next() {
 		if err := rows.Scan(&id, &title, &description, &duration, &cid, &cname, &last_updated); err != nil {
-			return nil, errors.WithMessage(err, "SelectVideosByCid rows.Scan error")
+			return errors.WithMessage(err, "SelectVideosByCid rows.Scan error")
 		}
-		videos = append(videos, &pb.Video{
+
+		ths, err := SelectThumbnailsByVid(db, id.String)
+		if err != nil {
+			return err
+		}
+		videos.Videos = append(videos.Videos, &pb.Video{
 			Id:          id.String,
 			Title:       title.String,
+			Thumbnails:  ths,
 			Description: description.String,
 			Duration:    duration.String,
 			Cid:         cid.String,
@@ -109,30 +112,9 @@ func SelectVideosByCid(db *sql.DB, channelId string) ([]*pb.Video, error) {
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, errors.WithMessage(err, "SelectVideosByCid rows error")
+		return errors.WithMessage(err, "SelectVideosByCid rows error")
 	}
-	return videos, nil
-}
-
-// SelectVideoById select video from videos by video id
-// TODO: select should join thumbnails
-func SelectVideoByVid(db *sql.DB, v *pb.Video) error {
-	var title, description, duration, cid, cname, last_updated sql.NullString
-	err := db.QueryRow("SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid=c.id WHERE v.id=?;", v.Id).Scan(&v.Id, &title, &description, &duration, &cid, &cname, &last_updated)
-	switch {
-	case err == sql.ErrNoRows:
-		return errors.WithMessagef(err, "SelectVideoByVid said no video with id %s", v.Id)
-	case err != nil:
-		return errors.WithMessage(err, "SelectVideoByVid QueryRow error")
-	default:
-		v.Title = title.String
-		v.Description = description.String
-		v.Duration = duration.String
-		v.Cid = cid.String
-		v.Cname = cname.String
-		v.LastUpdated = last_updated.String
-		return nil
-	}
+	return nil
 }
 
 // SelectVidsByCid select video id list from videos by channel id
@@ -177,11 +159,6 @@ func SelectCidByVid(db *sql.DB, vid string) (string, error) {
 
 // InsertVids insert vids with cid
 func InsertVids(db *sql.DB, vids []string, cid string) error {
-	stmt, err := db.Prepare("INSERT INTO videos(id, cid) VALUES(?, ?)")
-	if err != nil {
-		return errors.WithMessage(err, "InsertVids stmt Prepare error")
-	}
-	defer stmt.Close()
 	for _, vid := range vids {
 		exist, err := VidExist(db, vid)
 		if err != nil {
@@ -190,11 +167,12 @@ func InsertVids(db *sql.DB, vids []string, cid string) error {
 		if exist {
 			continue
 		}
-		if _, err = stmt.Exec(vid, cid); err != nil {
-			return errors.WithMessage(err, "InsertVids stmt Exec error")
+		_, err = db.Exec("INSERT INTO videos(id, cid) VALUES(?, ?)", vid, cid)
+		if err != nil {
+			return errors.WithMessage(err, "InsertVids Exec error")
 		}
 	}
-	return err
+	return nil
 }
 
 // UpdateVideo update all fields to db except vid
@@ -202,13 +180,10 @@ func UpdateVideo(db *sql.DB, v *pb.Video) error {
 	if v.Id == "" {
 		return errors.New("provide nil vid")
 	}
-	stmt, err := db.Prepare("UPDATE videos SET title=?, description=?, duration=?, cid=?, last_updated=? WHERE id=?")
+	_, err := db.Exec("UPDATE videos SET title=?, description=?, duration=?, cid=?, last_updated=? WHERE id=?",
+		v.Title, v.Description, v.Duration, v.Cid, v.LastUpdated, v.Id)
 	if err != nil {
-		return errors.WithMessage(err, "UpdateVideo stmt Prepare error")
-	}
-	defer stmt.Close()
-	if _, err := stmt.Exec(v.Title, v.Description, v.Duration, v.Cid, v.LastUpdated, v.Id); err != nil {
-		return errors.WithMessage(err, "UpdateVideo stmt Exec error")
+		return errors.WithMessage(err, "UpdateVideo Exec error")
 	}
 	return nil
 }
@@ -216,14 +191,11 @@ func UpdateVideo(db *sql.DB, v *pb.Video) error {
 // InsertVideo insert video to db
 // Notice: No vid exist judgement here
 func InsertVideo(db *sql.DB, v *pb.Video) error {
-	stmt, err := db.Prepare("insert into videos(id, title, description, duration, cid, last_updated) values(?,?,?,?,?,?)")
+	_, err := db.Exec(
+		"INSERT INTO videos(id, title, description, duration, cid, last_updated) VALUES(?,?,?,?,?,?)",
+		v.Id, v.Title, v.Description, v.Duration, v.Cid, v.LastUpdated)
 	if err != nil {
-		return errors.WithMessage(err, "InsertVideo stmt Prepare error")
-	}
-	defer stmt.Close()
-
-	if _, err = stmt.Exec(v.Id, v.Title, v.Description, v.Duration, v.Cid, v.LastUpdated); err != nil {
-		return errors.WithMessage(err, "InsertVideo stmt Exec error")
+		return errors.WithMessage(err, "InsertVideo Exec error")
 	}
 	return nil
 }

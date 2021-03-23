@@ -40,7 +40,11 @@ func main() {
 		case "2":
 			fmt.Println(">> Update channels")
 			log.Println("Start!")
-			job.UpdateChannels(false)
+			err := job.UpdateChannels(false)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 			log.Println("done.")
 			fmt.Println("------------------------------------------------------")
 			menu()
@@ -54,7 +58,11 @@ func main() {
 			answer := scanner.Text()
 			if strings.ToLower(strings.TrimSpace(answer)) == "y" {
 				log.Println("Greedy Update Start!")
-				job.UpdateChannels(true)
+				err := job.UpdateChannels(true)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
 				log.Println("done")
 				fmt.Println("------------------------------------------------------")
 			}
