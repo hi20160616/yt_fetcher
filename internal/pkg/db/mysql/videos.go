@@ -40,7 +40,7 @@ func SearchVideos(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, er
 	return vs, nil
 }
 
-// SelectVideosFromTo select videos left join channels where rank != -1
+// SelectVideosFromTo select videos from time a to time b left join channels where rank != -1
 // TODO: pass test
 func SelectVideosFromTo(db *sql.DB, vs *pb.Videos) (*pb.Videos, error) {
 	q := "SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid = c.id WHERE v.last_updated>? AND v.last_updated<? AND c.rank<>-1 order by cid;"

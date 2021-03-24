@@ -90,11 +90,11 @@ func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	client := youtube.Client{}
 	video, err := client.GetVideo("https://www.youtube.com/watch?v=" + v.Id)
 	if err != nil {
-		return nil, errors.WithMessage(err, "getVideoFromApi error on videoId: "+v.Id)
+		return nil, errors.WithMessage(err, "getVideoFromApi L93 error on videoId: "+v.Id)
 	}
 	cid, err := getCid(dc, vid, true)
 	if err != nil {
-		return nil, errors.WithMessage(err, "getVideoFromApi error on videoId: "+v.Id)
+		return nil, errors.WithMessage(err, "getVideoFromApi L97 error on videoId: "+v.Id)
 	}
 	t := getLastModified(video)
 	v.Title = video.Title

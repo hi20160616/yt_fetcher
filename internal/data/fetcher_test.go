@@ -22,7 +22,7 @@ func TestGetChannelFromSource(t *testing.T) {
 }
 
 func TestGetVideoFromApi(t *testing.T) {
-	vid := "FE15vkiXuwE"
+	vid := "EOg9VHV7cOo"
 	want := "四千億隻蝗蟲哪去了？這可能就是人類的結局 | 老高與小茉 Mr & Mrs Gao"
 	dc, err := db.NewDBCase()
 	if err != nil {
