@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
@@ -185,6 +186,10 @@ func getVideos(dc *sql.DB, c *pb.Channel, greedy bool) (*pb.Videos, error) {
 		v := &pb.Video{Id: id}
 		v, err = getVideo(dc, v, greedy)
 		if err != nil {
+			if strings.Contains(err.Error(),
+				"cannot playback and download, status: LIVE_STREAM_OFFLINE,") {
+				continue
+			}
 			return nil, err
 		}
 		vs = append(vs, v)
