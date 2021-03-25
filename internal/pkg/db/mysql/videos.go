@@ -8,10 +8,9 @@ import (
 )
 
 // Search just search keywords is contained in title or description
-// TODO: pass test
 func SearchVideos(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, error) {
 	// query prapare
-	query := `SELECT v.id, v.title, v.thumbnails, v.description, v.duration, v.cid, c.name AS cname, v.last_updated
+	query := `SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated
 		FROM videos AS v LEFT JOIN channels AS c ON v.cid = c.id`
 	if len(keywords) != 0 {
 		query += " WHERE "
@@ -41,7 +40,6 @@ func SearchVideos(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, er
 }
 
 // SelectVideosFromTo select videos from time a to time b left join channels where rank != -1
-// TODO: pass test
 func SelectVideosFromTo(db *sql.DB, vs *pb.Videos) (*pb.Videos, error) {
 	q := "SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid = c.id WHERE v.last_updated>? AND v.last_updated<? AND c.rank<>-1 order by cid;"
 	rows, err := db.Query(q, vs.After, vs.Before)
@@ -140,6 +138,28 @@ func SelectVidsByCid(db *sql.DB, cid string) ([]string, error) {
 		return nil, err
 	}
 
+	return vids, nil
+}
+
+// SelectVidsTidNull get vids that the tid is null in thumbnails
+func SelectVidsTidNull(db *sql.DB) ([]string, error) {
+	rows, err := db.Query("SELECT v.id AS vid FROM videos AS v LEFT JOIN thumbnails AS t ON v.id = t.vid WHERE t.id is NULL;")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	vids := make([]string, 0)
+	for rows.Next() {
+		var vid string
+		if err = rows.Scan(&vid); err != nil {
+			return nil, err
+		}
+		vids = append(vids, vid)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
 	return vids, nil
 }
 

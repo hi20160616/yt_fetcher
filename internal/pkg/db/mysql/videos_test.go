@@ -17,12 +17,13 @@ func TestSearchVideos(t *testing.T) {
 	}
 	defer db.Close()
 
-	vs, err := SearchVideos(db, &pb.Videos{}, "5")
+	vs, err := SearchVideos(db, &pb.Videos{}, "Delhi")
 	if err != nil {
 		t.Error(err)
 	}
 
 	fmt.Println(len(vs.Videos))
+	fmt.Println(vs.Videos[5].Thumbnails)
 }
 
 func TestSelectVideosFromTo(t *testing.T) {
@@ -41,7 +42,8 @@ func TestSelectVideosFromTo(t *testing.T) {
 	}
 	flag := false
 	for _, v := range vs.Videos {
-		if v.Title == "目前最詳盡的阿努納奇的故事，人類誕生的真正原因 | 老高與小茉 Mr & Mrs Gao" {
+		if v.Title == "Delhi Covid Crisis: Over 1000 New Cases In Last 24 Hours, Active Cases At 4890" {
+			fmt.Println(v.Thumbnails)
 			flag = true
 		}
 	}
@@ -58,7 +60,7 @@ func TestSelectVideosByCid(t *testing.T) {
 	}
 	defer db.Close()
 
-	cid := "UC_gUM8rL-Lrg6O3adPW9K1g"
+	cid := "UCYPvAwZP8pZhSMW8qs7cVCw"
 	vs, err := SelectVideosByCid(db, cid)
 	if err != nil {
 		t.Error(err)
@@ -79,7 +81,7 @@ func TestSelectVideo(t *testing.T) {
 	}
 	defer db.Close()
 
-	got := &pb.Video{Id: "12x-CfvovfQ"}
+	got := &pb.Video{Id: "zZM9YrGdiyQ"}
 	if got, err = SelectVideoByVid(db, got); err != nil {
 		t.Errorf("err: %+v", err)
 	}

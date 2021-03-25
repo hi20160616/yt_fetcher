@@ -9,26 +9,10 @@ import (
 	db "github.com/hi20160616/yt_fetcher/internal/pkg/db/mysql"
 )
 
-func TestGetCid(t *testing.T) {
-	ts := "pXV12sqXyKY"
-	dc, err := db.NewDBCase()
-	if err != nil {
-		t.Error(err)
-	}
-	got, err := getCid(dc, ts, false)
-	if err != nil {
-		t.Error(err)
-	}
-	want := "UCPDis9pjXuqyI7RYLJ-TTSA"
-	if got != want {
-		t.Errorf("got %v, want %v", got, want)
-	}
-}
-
 // go test -test.run=^TestGetVideo$
 func TestGetVideo(t *testing.T) {
 	fr := NewFetcherRepo()
-	v := &pb.Video{Id: "FE15vkiXuwE"}
+	v := &pb.Video{Id: "zZM9YrGdiyQ"}
 	v, err := fr.GetVideo(v)
 	if err != nil {
 		t.Fatal(err)
@@ -37,7 +21,7 @@ func TestGetVideo(t *testing.T) {
 }
 
 func TestGetVideoPrivate(t *testing.T) {
-	vid := "NHgXDqU-ihM"
+	vid := "zZM9YrGdiyQ"
 	dc, err := db.NewDBCase()
 	if err != nil {
 		t.Error(err)
@@ -52,7 +36,7 @@ func TestGetVideoPrivate(t *testing.T) {
 // go test -test.run=^TestGetVideoIds$
 func TestGetVids(t *testing.T) {
 	fr := NewFetcherRepo()
-	c := &pb.Channel{Id: "UC_IEcnNeHc_bwd92Ber-lew"}
+	c := &pb.Channel{Id: "UCYPvAwZP8pZhSMW8qs7cVCw"}
 
 	c, err := fr.GetVids(c, false)
 	if err != nil {
@@ -68,7 +52,7 @@ func TestGetVids(t *testing.T) {
 // go test -test.run=^TestGetVideos$
 func TestGetVideos(t *testing.T) {
 	fr := NewFetcherRepo()
-	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ"}
+	c := &pb.Channel{Id: "UCYPvAwZP8pZhSMW8qs7cVCw"}
 
 	got, err := fr.GetVideos(c, false)
 	if err != nil {
@@ -76,52 +60,6 @@ func TestGetVideos(t *testing.T) {
 	}
 	for i, video := range got.Videos {
 		fmt.Println(i, ":", video.Title)
-	}
-}
-
-func TestGetSetChannel(t *testing.T) {
-	fr := NewFetcherRepo()
-	c := &pb.Channel{Id: "UCMUnInmOkrWN4gof9KlhNmQ"}
-
-	c, err := fr.GetChannel(c)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if c.Name != "老高與小茉 Mr & Mrs Gao" {
-		t.Errorf("got: %v", c.Name)
-	}
-}
-
-func TestGetChannels(t *testing.T) {
-	fr := NewFetcherRepo()
-	cs := &pb.Channels{}
-
-	if got, err := fr.GetChannels(cs); err != nil {
-		t.Error(err)
-	} else {
-		for _, c := range got.Channels {
-			fmt.Println(c)
-		}
-	}
-}
-
-func TestUpdateChannelFromSource(t *testing.T) {
-	c := &pb.Channel{Id: "UC_IEcnNeHc_bwd92Ber-lew"}
-	dc, err := db.NewDBCase()
-	if err != nil {
-		t.Error(err)
-	}
-
-	if err := updateChannelFromSource(dc, c, false); err != nil {
-		t.Error(err)
-	}
-}
-
-func TestUpdateChannels(t *testing.T) {
-	fr := NewFetcherRepo()
-	if err := fr.UpdateChannels(&pb.Channels{}, true); err != nil {
-		t.Error(err)
 	}
 }
 

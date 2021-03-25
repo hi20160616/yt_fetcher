@@ -23,6 +23,8 @@ type YoutubeFetcherClient interface {
 	GetVideos(ctx context.Context, in *Channel, opts ...grpc.CallOption) (*Videos, error)
 	// Get videos info updated from time a to time b and rank != -1
 	GetVideosFromTo(ctx context.Context, in *Videos, opts ...grpc.CallOption) (*Videos, error)
+	// Get videos info in last 24 hours and rank != -1
+	GetVideosIn24H(ctx context.Context, in *Videos, opts ...grpc.CallOption) (*Videos, error)
 	// Get video info by videoId
 	GetVideo(ctx context.Context, in *Video, opts ...grpc.CallOption) (*Video, error)
 	// Get and set channel name by cid
@@ -64,6 +66,15 @@ func (c *youtubeFetcherClient) GetVideos(ctx context.Context, in *Channel, opts 
 func (c *youtubeFetcherClient) GetVideosFromTo(ctx context.Context, in *Videos, opts ...grpc.CallOption) (*Videos, error) {
 	out := new(Videos)
 	err := c.cc.Invoke(ctx, "/yt_fetcher.api.YoutubeFetcher/GetVideosFromTo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *youtubeFetcherClient) GetVideosIn24H(ctx context.Context, in *Videos, opts ...grpc.CallOption) (*Videos, error) {
+	out := new(Videos)
+	err := c.cc.Invoke(ctx, "/yt_fetcher.api.YoutubeFetcher/GetVideosIn24H", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -125,6 +136,8 @@ type YoutubeFetcherServer interface {
 	GetVideos(context.Context, *Channel) (*Videos, error)
 	// Get videos info updated from time a to time b and rank != -1
 	GetVideosFromTo(context.Context, *Videos) (*Videos, error)
+	// Get videos info in last 24 hours and rank != -1
+	GetVideosIn24H(context.Context, *Videos) (*Videos, error)
 	// Get video info by videoId
 	GetVideo(context.Context, *Video) (*Video, error)
 	// Get and set channel name by cid
@@ -150,6 +163,9 @@ func (UnimplementedYoutubeFetcherServer) GetVideos(context.Context, *Channel) (*
 }
 func (UnimplementedYoutubeFetcherServer) GetVideosFromTo(context.Context, *Videos) (*Videos, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVideosFromTo not implemented")
+}
+func (UnimplementedYoutubeFetcherServer) GetVideosIn24H(context.Context, *Videos) (*Videos, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetVideosIn24H not implemented")
 }
 func (UnimplementedYoutubeFetcherServer) GetVideo(context.Context, *Video) (*Video, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVideo not implemented")
@@ -229,6 +245,24 @@ func _YoutubeFetcher_GetVideosFromTo_Handler(srv interface{}, ctx context.Contex
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(YoutubeFetcherServer).GetVideosFromTo(ctx, req.(*Videos))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _YoutubeFetcher_GetVideosIn24H_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Videos)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(YoutubeFetcherServer).GetVideosIn24H(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/yt_fetcher.api.YoutubeFetcher/GetVideosIn24H",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(YoutubeFetcherServer).GetVideosIn24H(ctx, req.(*Videos))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -341,6 +375,10 @@ var YoutubeFetcher_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetVideosFromTo",
 			Handler:    _YoutubeFetcher_GetVideosFromTo_Handler,
+		},
+		{
+			MethodName: "GetVideosIn24H",
+			Handler:    _YoutubeFetcher_GetVideosIn24H_Handler,
 		},
 		{
 			MethodName: "GetVideo",

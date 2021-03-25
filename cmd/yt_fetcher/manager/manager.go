@@ -18,6 +18,7 @@ func menu() {
 	fmt.Println("[2] Update Channels")
 	fmt.Println("[3] Update Channels Greedy!")
 	fmt.Println("[4] Delete Channel by id")
+	fmt.Println("[5] Update Thumbnails")
 	fmt.Println("[q] Quit")
 	fmt.Printf(">> Input your choice: ")
 }
@@ -42,8 +43,8 @@ func main() {
 			log.Println("Start!")
 			err := job.UpdateChannels(false)
 			if err != nil {
-				fmt.Println(err)
-				return
+				log.Println(err)
+				continue
 			}
 			log.Println("done.")
 			fmt.Println("------------------------------------------------------")
@@ -75,6 +76,18 @@ func main() {
 			fmt.Printf(">> DEL channel by id: `%s`\n", cid)
 			job.DelChannel(cid)
 			fmt.Println("done.\n------------------------------------------------------")
+			menu()
+			continue
+		case "5":
+			fmt.Println(">> Update Thumbnails")
+			log.Println("Start!")
+			err := job.UpdateThumbnails()
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			log.Println("done.")
+			fmt.Println("------------------------------------------------------")
 			menu()
 			continue
 		case "q":

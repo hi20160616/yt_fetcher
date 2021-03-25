@@ -1,14 +1,16 @@
 package job
 
 import (
+	"errors"
+
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 	"github.com/hi20160616/yt_fetcher/internal/biz"
 	"github.com/hi20160616/yt_fetcher/internal/data"
-	"github.com/hi20160616/yt_fetcher/internal/pkg/db/mysql"
+	db "github.com/hi20160616/yt_fetcher/internal/pkg/db/mysql"
 )
 
 func AddOrUpdateChannel(id string) error {
-	dc, err := mysql.NewDBCase()
+	dc, err := db.NewDBCase()
 	if err != nil {
 		return err
 	}
@@ -18,7 +20,7 @@ func AddOrUpdateChannel(id string) error {
 	// get info from source
 	c, err = data.GetChannelFromSource(c)
 	// storage
-	return mysql.InsertOrUpdateChannel(dc, c)
+	return db.InsertOrUpdateChannel(dc, c)
 }
 
 func DelChannel(id string) error {
@@ -40,4 +42,31 @@ func UpdateChannels(greedy bool) error {
 	return fc.UpdateChannels(cs, greedy)
 	// fc.SetGreedy(greedy)
 	// return fc.UpdateChannels(cs, fc.GetGreedy())
+}
+
+func UpdateThumbnails() error {
+	dc, err := db.NewDBCase()
+	if err != nil {
+		return err
+	}
+	defer dc.Close()
+
+	vids, err := db.SelectVidsTidNull(dc)
+	for _, vid := range vids {
+		v, err := data.GetVideoFromApi(dc, vid)
+		if err != nil {
+			if errors.Is(err, data.ErrIgnoreVideoOnPurpose) {
+				continue
+			}
+			return err
+		}
+		if len(v.Thumbnails) == 0 {
+			return errors.New("cannot get thumbnails by videoId: " + vid)
+		}
+		// save it
+		if err = db.InsertOrUpdateThumbnails(dc, v.Thumbnails); err != nil {
+			return err
+		}
+	}
+	return nil
 }

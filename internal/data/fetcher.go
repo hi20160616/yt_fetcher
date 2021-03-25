@@ -6,6 +6,7 @@ import (
 	"html"
 	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/hi20160616/exhtml"
@@ -13,6 +14,8 @@ import (
 	youtube "github.com/kkdai/youtube/v2"
 	"github.com/pkg/errors"
 )
+
+var ErrIgnoreVideoOnPurpose error
 
 func GetChannelFromSource(c *pb.Channel) (*pb.Channel, error) {
 	return getChannelFromSource(c)
@@ -85,11 +88,19 @@ func getCidFromSource(vid string) (string, error) {
 	return rs[0][1], nil
 }
 
+func GetVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
+	return getVideoFromApi(dc, vid)
+}
+
 func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	v := &pb.Video{Id: vid}
 	client := youtube.Client{}
 	video, err := client.GetVideo("https://www.youtube.com/watch?v=" + v.Id)
 	if err != nil {
+		if strings.Contains(err.Error(), "cannot playback and download") {
+			ErrIgnoreVideoOnPurpose = errors.WithMessage(err, "getVideoFromApi ignore video "+vid)
+			return nil, ErrIgnoreVideoOnPurpose
+		}
 		return nil, errors.WithMessage(err, "getVideoFromApi L93 error on videoId: "+v.Id)
 	}
 	cid, err := getCid(dc, vid, true)
