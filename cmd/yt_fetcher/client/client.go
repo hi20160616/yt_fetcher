@@ -22,7 +22,7 @@ func main() {
 	defer cancel()
 
 	// search videos: pass test
-	vs := &pb.Videos{Keywords: []string{"老高"}}
+	vs := &pb.Videos{Keywords: []string{"english"}}
 	vs, err = c.SearchVideos(ctx, vs)
 	if err != nil {
 		fmt.Println(err)
