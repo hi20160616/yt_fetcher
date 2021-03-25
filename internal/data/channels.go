@@ -146,7 +146,8 @@ func updateChannelFromSource(dc *sql.DB, c *pb.Channel, greedy bool) error {
 	for _, vid := range c.Vids {
 		var vExist, tExist bool
 		if greedy {
-			err = iou(true, true, vid)
+			// err = iou(true, true, vid)
+			vExist, tExist = true, true
 		} else {
 			// continue on exist
 			vExist, err = db.VidExist(dc, vid)
@@ -157,8 +158,7 @@ func updateChannelFromSource(dc *sql.DB, c *pb.Channel, greedy bool) error {
 			if err != nil {
 				return err
 			}
-			err = iou(vExist, tExist, vid)
-
+			// err = iou(vExist, tExist, vid)
 		}
 		if err = iou(vExist, tExist, vid); err != nil {
 			if errors.Is(err, ErrIgnoreVideoOnPurpose) {
