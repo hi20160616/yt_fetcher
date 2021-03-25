@@ -55,7 +55,7 @@ func getVideo(dc *sql.DB, v *pb.Video, greedy bool) (*pb.Video, error) {
 			if err != nil {
 				return nil, err
 			}
-			return v, db.InsertOrUpdate2(dc, v)
+			return v, db.Insert2(dc, v)
 		}
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func getVideo(dc *sql.DB, v *pb.Video, greedy bool) (*pb.Video, error) {
 		if err != nil {
 			return nil, err
 		}
-		return v, db.InsertOrUpdate2(dc, v)
+		return v, db.Insert2(dc, v)
 	}
 	return v, nil
 }

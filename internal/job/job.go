@@ -20,7 +20,7 @@ func AddOrUpdateChannel(id string) error {
 	// get info from source
 	c, err = data.GetChannelFromSource(c)
 	// storage
-	return db.InsertOrUpdateChannel(dc, c)
+	return db.InsertChannel(dc, c)
 }
 
 func DelChannel(id string) error {
@@ -64,7 +64,7 @@ func UpdateThumbnails() error {
 			return errors.New("cannot get thumbnails by videoId: " + vid)
 		}
 		// save it
-		if err = db.InsertOrUpdateThumbnails(dc, v.Thumbnails); err != nil {
+		if err = db.InsertThumbnails(dc, v.Thumbnails); err != nil {
 			return err
 		}
 	}

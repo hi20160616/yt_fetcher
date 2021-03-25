@@ -163,7 +163,7 @@ func TestInsertOrUpdateVideo(t *testing.T) {
 		t.Error(err)
 	}
 	defer dc.Close()
-	if err := InsertOrUpdateVideo(dc, video); err != nil {
+	if err := InsertVideo(dc, video); err != nil {
 		t.Error(err)
 	}
 

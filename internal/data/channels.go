@@ -138,9 +138,9 @@ func updateChannelFromSource(dc *sql.DB, c *pb.Channel, greedy bool) error {
 			return err
 		}
 		if vExist && !tExist {
-			return db.InsertOrUpdateThumbnails(dc, v.Thumbnails)
+			return db.InsertThumbnails(dc, v.Thumbnails)
 		}
-		return db.InsertOrUpdate2(dc, v)
+		return db.Insert2(dc, v)
 	}
 
 	for _, vid := range c.Vids {

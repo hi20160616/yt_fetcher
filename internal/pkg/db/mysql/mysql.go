@@ -29,22 +29,22 @@ func NewDBCase() (*sql.DB, error) {
 }
 
 // InsertOrUpdate insert or update video and thumbnails by v and channel by c
-func InsertOrUpdate(db *sql.DB, v *pb.Video, c *pb.Channel) error {
+func Insert(db *sql.DB, v *pb.Video, c *pb.Channel) error {
 	if v.Id == "" {
 		return errors.New("provide nil vid")
 	}
 
-	if err := InsertOrUpdateThumbnails(db, v.Thumbnails); err != nil {
+	if err := InsertThumbnails(db, v.Thumbnails); err != nil {
 		return err
 	}
-	if err := InsertOrUpdateVideo(db, v); err != nil {
+	if err := InsertVideo(db, v); err != nil {
 		return err
 	}
-	return InsertOrUpdateChannel(db, c)
+	return InsertChannel(db, c)
 }
 
 // InsertOrUpdate2 insert or update videos, thumbnails, channels by v
 // NOTICE: this function should invoke after v was populated completely.
-func InsertOrUpdate2(db *sql.DB, v *pb.Video) error {
-	return InsertOrUpdate(db, v, &pb.Channel{Id: v.Cid, Name: v.Cname})
+func Insert2(db *sql.DB, v *pb.Video) error {
+	return Insert(db, v, &pb.Channel{Id: v.Cid, Name: v.Cname})
 }

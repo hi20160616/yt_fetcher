@@ -65,7 +65,7 @@ func TestInsertOrUpdateChannel(t *testing.T) {
 	defer db.Close()
 
 	c := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ", Name: "亮生活 / Bright Side", Rank: 1}
-	if err = InsertOrUpdateChannel(db, c); err != nil {
+	if err = InsertChannel(db, c); err != nil {
 		t.Errorf("err: %+v", err)
 	}
 	cc := &pb.Channel{Id: "UCCtTgzGzQSWVzCG0xR7U-MQ"}

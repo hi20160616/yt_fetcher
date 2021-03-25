@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"strings"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 	"github.com/pkg/errors"
@@ -39,6 +40,19 @@ func InsertThumbnail(db *sql.DB, th *pb.Thumbnail) error {
 	return nil
 }
 
+func InsertThumbnails(db *sql.DB, ths []*pb.Thumbnail) error {
+	for _, th := range ths {
+		err := InsertThumbnail(db, th)
+		if err != nil {
+			if strings.Contains(err.Error(), "Duplicate entry") {
+				return UpdateThumbnail(db, th)
+			}
+			return err
+		}
+	}
+	return nil
+}
+
 func UpdateThumbnail(db *sql.DB, th *pb.Thumbnail) error {
 	query := "UPDATE thumbnails SET id=?, width=?, height=?, url=?, vid=? WHERE id=?;"
 	if _, err := db.Exec(query, th.Id, th.Width, th.Height, th.URL, th.Vid, th.Id); err != nil {
@@ -47,30 +61,30 @@ func UpdateThumbnail(db *sql.DB, th *pb.Thumbnail) error {
 	return nil
 }
 
-func InsertOrUpdateThumbnail(db *sql.DB, th *pb.Thumbnail) error {
-	if th.Id == "" {
-		return errors.New("Insert or update by nil id of thumbnail")
-	}
-	exist, err := TidExist(db, th.Id)
-	if err != nil {
-		return err
-	}
-	if exist {
-		return UpdateThumbnail(db, th)
-	} else {
-		return InsertThumbnail(db, th)
-	}
-}
-
-func InsertOrUpdateThumbnails(db *sql.DB, ths []*pb.Thumbnail) error {
-	for _, th := range ths {
-		err := InsertOrUpdateThumbnail(db, th)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
+// func InsertOrUpdateThumbnail(db *sql.DB, th *pb.Thumbnail) error {
+//         if th.Id == "" {
+//                 return errors.New("Insert or update by nil id of thumbnail")
+//         }
+//         exist, err := TidExist(db, th.Id)
+//         if err != nil {
+//                 return err
+//         }
+//         if exist {
+//                 return UpdateThumbnail(db, th)
+//         } else {
+//                 return InsertThumbnail(db, th)
+//         }
+// }
+//
+// func InsertOrUpdateThumbnails(db *sql.DB, ths []*pb.Thumbnail) error {
+//         for _, th := range ths {
+//                 err := InsertOrUpdateThumbnail(db, th)
+//                 if err != nil {
+//                         return err
+//                 }
+//         }
+//         return nil
+// }
 
 func TidExist(db *sql.DB, tid string) (bool, error) {
 	rows, err := db.Query("SELECT * FROM thumbnails WHERE id=?", tid)

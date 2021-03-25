@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"strconv"
+	"strings"
 	"time"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
@@ -56,7 +57,10 @@ func InsertChannel(db *sql.DB, c *pb.Channel) error {
 	q := "INSERT INTO channels (id, name, `rank`, last_updated) values(?,?,?,?)"
 	_, err := db.Exec(q, c.Id, c.Name, c.Rank, c.LastUpdated)
 	if err != nil {
-		return errors.WithMessage(err, "InsertChannel stmt Prepare error")
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			return UpdateChannel(db, c)
+		}
+		return errors.WithMessage(err, "InsertChannel Exec error")
 	}
 	c.LastUpdated = strconv.FormatInt(time.Now().UnixNano(), 10)[:16]
 	return nil
@@ -84,23 +88,22 @@ func CidExist(db *sql.DB, cid string) (bool, error) {
 	return rows.Next(), nil
 }
 
-// InsertOrUpdateChannel determine id exist first, if exist, update or else insert c to db.
-func InsertOrUpdateChannel(db *sql.DB, c *pb.Channel) error {
-	if c.Id == "" {
-		return errors.New("Provide nil channel id")
-	}
-
-	exist, err := CidExist(db, c.Id)
-	if err != nil {
-		return errors.WithMessage(err, "InsertOrUpdateChannel CidExist error")
-	}
-	if exist {
-		return UpdateChannel(db, c)
-	} else {
-		return InsertChannel(db, c)
-	}
-
-}
+// // InsertOrUpdateChannel determine id exist first, if exist, update or else insert c to db.
+// func InsertOrUpdateChannel(db *sql.DB, c *pb.Channel) error {
+//         if c.Id == "" {
+//                 return errors.New("Provide nil channel id")
+//         }
+//
+//         exist, err := CidExist(db, c.Id)
+//         if err != nil {
+//                 return errors.WithMessage(err, "InsertOrUpdateChannel CidExist error")
+//         }
+//         if exist {
+//                 return UpdateChannel(db, c)
+//         } else {
+//                 return InsertChannel(db, c)
+//         }
+// }
 
 func DelChannel(db *sql.DB, c *pb.Channel) error {
 	if c.Id == "" {
