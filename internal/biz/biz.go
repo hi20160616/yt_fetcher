@@ -24,6 +24,7 @@ type FetcherRepo interface {
 	DelChannel(*pb.Channel) error
 	GetChannels(*pb.Channels) (*pb.Channels, error)
 	SearchVideos(*pb.Videos) (*pb.Videos, error)
+	DelNilVideos() error
 }
 
 func NewFetcherCase(repo FetcherRepo) *FetcherCase {
@@ -89,4 +90,7 @@ func (fc *FetcherCase) SetGreedy(greedy bool) {
 
 func (fc *FetcherCase) GetGreedy() bool {
 	return fc.greedy
+}
+func (fc *FetcherCase) DelNilVideos() error {
+	return fc.repo.DelNilVideos()
 }

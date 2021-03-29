@@ -181,3 +181,11 @@ func (fr *fetcherRepo) SearchVideos(vs *pb.Videos) (*pb.Videos, error) {
 	}
 	return db.SearchVideos(dc, vs, vs.Keywords...)
 }
+
+func (fr *fetcherRepo) DelNilVideos() error {
+	dc, err := db.NewDBCase()
+	if err != nil {
+		return err
+	}
+	return db.DelNilVideos(dc)
+}
