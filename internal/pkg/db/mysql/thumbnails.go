@@ -55,14 +55,6 @@ func InsertThumbnails(db *sql.DB, ths []*pb.Thumbnail) error {
 	return nil
 }
 
-// func UpdateThumbnail(db *sql.DB, th *pb.Thumbnail) error {
-//         query := "UPDATE thumbnails SET id=?, width=?, height=?, url=?, vid=? WHERE id=?;"
-//         if _, err := db.Exec(query, th.Id, th.Width, th.Height, th.URL, th.Vid, th.Id); err != nil {
-//                 return err
-//         }
-//         return nil
-// }
-
 func TidExist(db *sql.DB, tid string) (bool, error) {
 	rows, err := db.Query("SELECT * FROM thumbnails WHERE id=?", tid)
 	if err != nil {

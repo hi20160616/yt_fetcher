@@ -179,19 +179,6 @@ func SelectCidByVid(db *sql.DB, vid string) (string, error) {
 	return cid, nil
 }
 
-// UpdateVideo update all fields to db except vid
-// func UpdateVideo(db *sql.DB, v *pb.Video) error {
-//         if v.Id == "" {
-//                 return errors.New("provide nil vid")
-//         }
-//         _, err := db.Exec("UPDATE videos SET title=?, description=?, duration=?, cid=?, last_updated=? WHERE id=?",
-//                 v.Title, v.Description, v.Duration, v.Cid, v.LastUpdated, v.Id)
-//         if err != nil {
-//                 return errors.WithMessage(err, "UpdateVideo Exec error")
-//         }
-//         return nil
-// }
-
 // InsertVideo insert video to db
 // Notice: No vid exist judgement here
 func InsertVideo(db *sql.DB, v *pb.Video) error {

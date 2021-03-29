@@ -68,19 +68,6 @@ func InsertChannel(db *sql.DB, c *pb.Channel) error {
 	return nil
 }
 
-// func UpdateChannel(db *sql.DB, c *pb.Channel) error {
-//         if c.Id == "" {
-//                 return errors.New("provide nil id while update channel")
-//         }
-//         q := "UPDATE channels SET name=?, `rank`=?, last_updated=? WHERE id=?"
-//         c.LastUpdated = strconv.FormatInt(time.Now().UnixNano(), 10)[:16]
-//         _, err := db.Exec(q, c.Name, c.Rank, c.LastUpdated, c.Id)
-//         if err != nil {
-//                 return errors.WithMessage(err, "UpdateChannel stmt Prepare error")
-//         }
-//         return nil
-// }
-
 func CidExist(db *sql.DB, cid string) (bool, error) {
 	rows, err := db.Query("SELECT * FROM channels WHERE id=?", cid)
 	if err != nil {
