@@ -91,7 +91,7 @@ func TestSelectVideo(t *testing.T) {
 		Description: "test for description 2",
 		Cid:         "UCCtTgzGzQSWVzCG0xR7U-MQ",
 		Cname:       "亮生活 / Bright Side",
-		LastUpdated: "1612601612245194",
+		LastUpdated: 1612601612245194,
 	}
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("got: %v, want: %v", got, want)
@@ -105,7 +105,7 @@ func TestInsertVideo(t *testing.T) {
 		Title:       "專給最勇敢警探的10道神秘謎題",
 		Description: "test for description",
 		Cid:         "UCCtTgzGzQSWVzCG0xR7U-MQ",
-		LastUpdated: "1612601612245194",
+		LastUpdated: 1612601612245194,
 	}
 	db, err := NewDBCase()
 	if err != nil {
@@ -137,7 +137,7 @@ func TestUpdateVideo(t *testing.T) {
 		Title:       "test title update",
 		Description: "test for description",
 		Cid:         "UCCtTgzGzQSWVzCG0xR7U-MQ",
-		LastUpdated: "1612601612245194",
+		LastUpdated: 1612601612245194,
 	}
 	db, err := NewDBCase()
 	if err != nil {
@@ -155,7 +155,7 @@ func TestInsertOrUpdateVideo(t *testing.T) {
 		Title:       "專給最勇敢警探的10道神秘謎題2",
 		Description: "test for description 2",
 		Cid:         "UCCtTgzGzQSWVzCG0xR7U-MQ",
-		LastUpdated: "1612601612245194",
+		LastUpdated: 1612601612245194,
 	}
 
 	dc, err := NewDBCase()

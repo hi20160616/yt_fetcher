@@ -89,7 +89,8 @@ func SelectVideoByVid(db *sql.DB, v *pb.Video) (*pb.Video, error) {
 }
 
 func selectVideos(db *sql.DB, videos *pb.Videos, rows *sql.Rows) error {
-	var id, title, description, duration, cid, cname, last_updated sql.NullString
+	var id, title, description, duration, cid, cname sql.NullString
+	var last_updated sql.NullInt64
 	for rows.Next() {
 		if err := rows.Scan(&id, &title, &description, &duration, &cid, &cname, &last_updated); err != nil {
 			return errors.WithMessage(err, "SelectVideosByCid rows.Scan error")
@@ -107,7 +108,7 @@ func selectVideos(db *sql.DB, videos *pb.Videos, rows *sql.Rows) error {
 			Duration:    duration.String,
 			Cid:         cid.String,
 			Cname:       cname.String,
-			LastUpdated: last_updated.String,
+			LastUpdated: last_updated.Int64,
 		})
 	}
 
@@ -233,20 +234,3 @@ func VidExist(db *sql.DB, vid string) (bool, error) {
 	defer rows.Close()
 	return rows.Next(), nil
 }
-
-// // InsertOrUpdateVideo determine vid exist first, if exist, update or else insert v to db.
-// func InsertOrUpdateVideo(db *sql.DB, v *pb.Video) error {
-//         if v.Id == "" {
-//                 return errors.New("provide nil videoId")
-//         }
-//
-//         exist, err := VidExist(db, v.Id)
-//         if err != nil {
-//                 return errors.WithMessage(err, "InsertOrUpdateVideo VidExist error")
-//         }
-//         if exist {
-//                 return UpdateVideo(db, v)
-//         } else {
-//                 return InsertVideo(db, v)
-//         }
-// }

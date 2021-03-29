@@ -6,6 +6,7 @@ import (
 	"html"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -93,6 +94,10 @@ func GetVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 }
 
 func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
+	cid, err := getCid(dc, vid, true)
+	if err != nil {
+		return nil, errors.WithMessage(err, "getVideoFromApi L99 error on videoId: "+vid)
+	}
 	v := &pb.Video{Id: vid}
 	client := youtube.Client{}
 	video, err := client.GetVideo("https://www.youtube.com/watch?v=" + v.Id)
@@ -101,14 +106,8 @@ func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 			ErrIgnoreVideoOnPurpose = errors.WithMessage(err, "getVideoFromApi ignore video "+vid)
 			return nil, ErrIgnoreVideoOnPurpose
 		}
-		return nil, errors.WithMessage(err, "getVideoFromApi L93 error on videoId: "+v.Id)
+		return nil, errors.WithMessage(err, "getVideoFromApi L109 error on videoId: "+v.Id)
 	}
-	cid, err := getCid(dc, vid, true)
-	if err != nil {
-		return nil, errors.WithMessage(err, "getVideoFromApi L97 error on videoId: "+v.Id)
-	}
-	t := getLastModified(video)
-	v.Title = video.Title
 	for _, thumbnail := range video.Thumbnails {
 		w, h := int32(thumbnail.Width), int32(thumbnail.Height)
 		v.Thumbnails = append(v.Thumbnails,
@@ -120,15 +119,20 @@ func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 				Vid:    v.Id,
 			})
 	}
+	v.Title = video.Title
 	v.Description = video.Description
 	v.Duration = video.Duration.String()
 	v.Cid = cid
 	v.Cname = video.Author
-	v.LastUpdated = t
+	t, err := strconv.Atoi(getLastModified(video))
+	if err != nil {
+		return nil, err
+	}
+	v.LastUpdated = int64(t)
 	return v, nil
 }
 
-func getLastModified(v *youtube.Video) (rt string) {
+func getLastModified(v *youtube.Video) string {
 	fs := v.Formats
 	for _, f := range fs {
 		if f.LastModified != "" {
