@@ -39,9 +39,8 @@ func UpdateChannels(greedy bool) error {
 		return err
 	}
 	// 2. for range cids, get vids from video pages where cid is
-	return fc.UpdateChannels(cs, greedy)
-	// fc.SetGreedy(greedy)
-	// return fc.UpdateChannels(cs, fc.GetGreedy())
+	fc.SetGreedy(greedy)
+	return fc.UpdateChannels(cs)
 }
 
 func UpdateThumbnails() error {

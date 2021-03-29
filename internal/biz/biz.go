@@ -79,7 +79,7 @@ func (fc *FetcherCase) GetChannels(cs *pb.Channels) (*pb.Channels, error) {
 	return fc.repo.GetChannels(cs)
 }
 
-func (fc *FetcherCase) UpdateChannels(cs *pb.Channels, greedy bool) error {
+func (fc *FetcherCase) UpdateChannels(cs *pb.Channels) error {
 	return fc.repo.UpdateChannels(cs, fc.greedy)
 }
 
