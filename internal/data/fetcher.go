@@ -98,25 +98,26 @@ func getVideoFromApi(dc *sql.DB, vid string) (*pb.Video, error) {
 	if err != nil {
 		return nil, errors.WithMessage(err, "getVideoFromApi L99 error on videoId: "+vid)
 	}
+
 	v := &pb.Video{Id: vid}
 	client := youtube.Client{}
-	video, err := client.GetVideo("https://www.youtube.com/watch?v=" + v.Id)
+	video, err := client.GetVideo("https://www.youtube.com/watch?v=" + vid)
 	if err != nil {
 		if strings.Contains(err.Error(), "cannot playback and download") {
 			ErrIgnoreVideoOnPurpose = errors.WithMessage(err, "getVideoFromApi ignore video "+vid)
 			return nil, ErrIgnoreVideoOnPurpose
 		}
-		return nil, errors.WithMessage(err, "getVideoFromApi L109 error on videoId: "+v.Id)
+		return nil, errors.WithMessage(err, "getVideoFromApi L109 error on videoId: "+vid)
 	}
 	for _, thumbnail := range video.Thumbnails {
 		w, h := int32(thumbnail.Width), int32(thumbnail.Height)
 		v.Thumbnails = append(v.Thumbnails,
 			&pb.Thumbnail{
-				Id:     fmt.Sprintf("%s_w%d", v.Id, w),
+				Id:     fmt.Sprintf("%s_w%d", vid, w),
 				Width:  w,
 				Height: h,
 				URL:    thumbnail.URL,
-				Vid:    v.Id,
+				Vid:    vid,
 			})
 	}
 	v.Title = video.Title

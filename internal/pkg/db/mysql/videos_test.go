@@ -131,56 +131,56 @@ func TestInsertVideo(t *testing.T) {
 	}
 }
 
-func TestUpdateVideo(t *testing.T) {
-	video := &pb.Video{
-		Id:          "5TW7ALXdlw8",
-		Title:       "test title update",
-		Description: "test for description",
-		Cid:         "UCCtTgzGzQSWVzCG0xR7U-MQ",
-		LastUpdated: 1612601612245194,
-	}
-	db, err := NewDBCase()
-	if err != nil {
-		t.Error(err)
-	}
-	defer db.Close()
-	if err := UpdateVideo(db, video); err != nil {
-		t.Errorf("err: %+v", err)
-	}
-}
+// func TestUpdateVideo(t *testing.T) {
+//         video := &pb.Video{
+//                 Id:          "5TW7ALXdlw8",
+//                 Title:       "test title update",
+//                 Description: "test for description",
+//                 Cid:         "UCCtTgzGzQSWVzCG0xR7U-MQ",
+//                 LastUpdated: 1612601612245194,
+//         }
+//         db, err := NewDBCase()
+//         if err != nil {
+//                 t.Error(err)
+//         }
+//         defer db.Close()
+//         if err := UpdateVideo(db, video); err != nil {
+//                 t.Errorf("err: %+v", err)
+//         }
+// }
 
-func TestInsertOrUpdateVideo(t *testing.T) {
-	video := &pb.Video{
-		Id:          "5TW7ALXdlw8",
-		Title:       "專給最勇敢警探的10道神秘謎題2",
-		Description: "test for description 2",
-		Cid:         "UCCtTgzGzQSWVzCG0xR7U-MQ",
-		LastUpdated: 1612601612245194,
-	}
-
-	dc, err := NewDBCase()
-	if err != nil {
-		t.Error(err)
-	}
-	defer dc.Close()
-	if err := InsertVideo(dc, video); err != nil {
-		t.Error(err)
-	}
-
-	// test
-	v := &pb.Video{Id: "5TW7ALXdlw8"}
-	if got, err := SelectVideoByVid(dc, v); err != nil {
-		t.Error(err)
-	} else {
-		if video.Id == got.Id &&
-			video.Title == got.Title &&
-			video.Description == got.Description &&
-			video.Cid == got.Cid &&
-			video.LastUpdated == got.LastUpdated {
-			t.Errorf("want: %+v, got: %+v", video, got)
-		}
-	}
-}
+// func TestInsertOrUpdateVideo(t *testing.T) {
+//         video := &pb.Video{
+//                 Id:          "5TW7ALXdlw8",
+//                 Title:       "專給最勇敢警探的10道神秘謎題2",
+//                 Description: "test for description 2",
+//                 Cid:         "UCCtTgzGzQSWVzCG0xR7U-MQ",
+//                 LastUpdated: 1612601612245194,
+//         }
+//
+//         dc, err := NewDBCase()
+//         if err != nil {
+//                 t.Error(err)
+//         }
+//         defer dc.Close()
+//         if err := InsertVideo(dc, video); err != nil {
+//                 t.Error(err)
+//         }
+//
+//         // test
+//         v := &pb.Video{Id: "5TW7ALXdlw8"}
+//         if got, err := SelectVideoByVid(dc, v); err != nil {
+//                 t.Error(err)
+//         } else {
+//                 if video.Id == got.Id &&
+//                         video.Title == got.Title &&
+//                         video.Description == got.Description &&
+//                         video.Cid == got.Cid &&
+//                         video.LastUpdated == got.LastUpdated {
+//                         t.Errorf("want: %+v, got: %+v", video, got)
+//                 }
+//         }
+// }
 
 // test via review the output
 func TestSelectVidsByCid(t *testing.T) {

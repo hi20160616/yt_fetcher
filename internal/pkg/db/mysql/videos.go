@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"database/sql"
-	"strings"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
 	"github.com/pkg/errors"
@@ -180,47 +179,31 @@ func SelectCidByVid(db *sql.DB, vid string) (string, error) {
 	return cid, nil
 }
 
-// InsertVids insert vids with cid
-func InsertVids(db *sql.DB, vids []string, cid string) error {
-	for _, vid := range vids {
-		exist, err := VidExist(db, vid)
-		if err != nil {
-			return errors.WithMessage(err, "InsertVids error")
-		}
-		if exist {
-			continue
-		}
-		_, err = db.Exec("INSERT INTO videos(id, cid) VALUES(?, ?)", vid, cid)
-		if err != nil {
-			return errors.WithMessage(err, "InsertVids Exec error")
-		}
-	}
-	return nil
-}
-
 // UpdateVideo update all fields to db except vid
-func UpdateVideo(db *sql.DB, v *pb.Video) error {
-	if v.Id == "" {
-		return errors.New("provide nil vid")
-	}
-	_, err := db.Exec("UPDATE videos SET title=?, description=?, duration=?, cid=?, last_updated=? WHERE id=?",
-		v.Title, v.Description, v.Duration, v.Cid, v.LastUpdated, v.Id)
-	if err != nil {
-		return errors.WithMessage(err, "UpdateVideo Exec error")
-	}
-	return nil
-}
+// func UpdateVideo(db *sql.DB, v *pb.Video) error {
+//         if v.Id == "" {
+//                 return errors.New("provide nil vid")
+//         }
+//         _, err := db.Exec("UPDATE videos SET title=?, description=?, duration=?, cid=?, last_updated=? WHERE id=?",
+//                 v.Title, v.Description, v.Duration, v.Cid, v.LastUpdated, v.Id)
+//         if err != nil {
+//                 return errors.WithMessage(err, "UpdateVideo Exec error")
+//         }
+//         return nil
+// }
 
 // InsertVideo insert video to db
 // Notice: No vid exist judgement here
 func InsertVideo(db *sql.DB, v *pb.Video) error {
-	_, err := db.Exec(
-		"INSERT INTO videos(id, title, description, duration, cid, last_updated) VALUES(?,?,?,?,?,?)",
+	q := "INSERT INTO videos(id, title, description, duration, cid, last_updated) VALUES(?,?,?,?,?,?)" +
+		" ON DUPLICATE KEY UPDATE id=?, title=?, description=?, duration=?, cid=?, last_updated=?"
+	_, err := db.Exec(q,
+		v.Id, v.Title, v.Description, v.Duration, v.Cid, v.LastUpdated,
 		v.Id, v.Title, v.Description, v.Duration, v.Cid, v.LastUpdated)
 	if err != nil {
-		if strings.Contains(err.Error(), "Duplicate entry") {
-			return UpdateVideo(db, v)
-		}
+		// if strings.Contains(err.Error(), "Duplicate entry") {
+		//         return UpdateVideo(db, v)
+		// }
 		return errors.WithMessage(err, "InsertVideo Exec error")
 	}
 	return nil
