@@ -81,7 +81,8 @@ func TestSelectVideo(t *testing.T) {
 	}
 	defer db.Close()
 
-	got := &pb.Video{Id: "zZM9YrGdiyQ"}
+	got := &pb.Video{Id: "zyy6okYjAfE"}
+	// got := &pb.Video{Id: "zZM9YrGdiyQ"}
 	if got, err = SelectVideoByVid(db, got); err != nil {
 		t.Errorf("err: %+v", err)
 	}
@@ -144,5 +145,26 @@ func TestSelectVidsByCid(t *testing.T) {
 		for _, v := range vs {
 			fmt.Println(v)
 		}
+	}
+}
+
+func TestGetNextSearch(t *testing.T) {
+	db, err := NewDBCase()
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+
+	page := &Page{keywords: []string{"english"}, limit: 10}
+
+	for {
+		page, err = getNextSearch(db, page)
+		if err != nil {
+			t.Error(err)
+		}
+		for _, v := range page.videos.Videos {
+			fmt.Println(v.Title)
+		}
+		time.Sleep(5 * time.Second)
 	}
 }
