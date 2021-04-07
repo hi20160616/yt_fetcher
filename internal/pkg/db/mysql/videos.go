@@ -18,6 +18,8 @@ type Page struct {
 	videos   *pb.Videos
 }
 
+var P *Page = &Page{limit: 30}
+
 func queryNextSearch(db *sql.DB, page *Page) (*Page, error) {
 	rows, err := db.Query(page.query, page.args...)
 	if err != nil {
@@ -27,7 +29,7 @@ func queryNextSearch(db *sql.DB, page *Page) (*Page, error) {
 
 	vs := &pb.Videos{}
 
-	if err = selectVideos(db, vs, rows); err != nil {
+	if err = mkVideos(db, vs, rows); err != nil {
 		return nil, err
 	}
 
@@ -40,18 +42,6 @@ func queryNextSearch(db *sql.DB, page *Page) (*Page, error) {
 }
 
 func getNextSearch(db *sql.DB, page *Page) (*Page, error) {
-	// q1 := ` SELECT x.id, x.title, x.description, x.duration, x.cid, x.cname, x.last_updated
-	//                 FROM (SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated
-	//                         FROM videos AS v LEFT JOIN channels AS c ON v.cid=c.id) AS x
-	//                 WHERE x.title LIKE "%english%" OR x.description LIKE "%english%" LIMIT 10;`
-	// q2 := `select v.title from
-	//                 (select * from videos where last_updated<1617018708463332 ORDER BY last_updated DESC, duration) as v
-	//                 where v.title LIKE "%english%" OR v.description LIKE "%english%" LIMIT 10;`
-	// q3 := ` SELECT x.id, x.title, x.description, x.duration, x.cid, x.cname, x.last_updated
-	//                 FROM (SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated
-	//                         FROM videos AS v LEFT JOIN channels AS c ON v.cid=c.id) AS x
-	//                 WHERE x.title LIKE "%english%" OR x.description LIKE "%english%" AND x.last_updated<1617018066061364 LIMIT 10; `
-
 	// first loop
 	if page.offset == 0 {
 		q := `SELECT x.id, x.title, x.description, x.duration, x.cid, x.cname, x.last_updated 
@@ -85,6 +75,15 @@ func getNextSearch(db *sql.DB, page *Page) (*Page, error) {
 }
 
 // Search just search keywords is contained in title or description
+func NextSearch(db *sql.DB, keywords ...string) (*pb.Videos, error) {
+	P.keywords = append(P.keywords, keywords...)
+	ps, err := getNextSearch(db, P)
+	if err != nil {
+		return nil, err
+	}
+	return ps.videos, nil
+}
+
 func SearchVideos(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, error) {
 	// query prapare
 	query := `SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname,
@@ -110,7 +109,7 @@ func SearchVideos(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, er
 	defer rows.Close()
 
 	// populate
-	if err = selectVideos(db, vs, rows); err != nil {
+	if err = mkVideos(db, vs, rows); err != nil {
 		return nil, err
 	}
 	return vs, nil
@@ -125,7 +124,7 @@ func SelectVideosFromTo(db *sql.DB, vs *pb.Videos) (*pb.Videos, error) {
 	}
 	defer rows.Close()
 
-	if err = selectVideos(db, vs, rows); err != nil {
+	if err = mkVideos(db, vs, rows); err != nil {
 		return nil, err
 	}
 	return vs, nil
@@ -141,7 +140,7 @@ func SelectVideosByCid(db *sql.DB, channelId string) (*pb.Videos, error) {
 	defer rows.Close()
 
 	videos := &pb.Videos{}
-	if err = selectVideos(db, videos, rows); err != nil {
+	if err = mkVideos(db, videos, rows); err != nil {
 		return nil, err
 	}
 	return videos, nil
@@ -155,7 +154,7 @@ func SelectVideoByVid(db *sql.DB, v *pb.Video) (*pb.Video, error) {
 		return nil, err
 	}
 	vs := &pb.Videos{}
-	if err = selectVideos(db, vs, rows); err != nil {
+	if err = mkVideos(db, vs, rows); err != nil {
 		return nil, err
 	}
 	if len(vs.Videos) == 0 {
@@ -164,7 +163,7 @@ func SelectVideoByVid(db *sql.DB, v *pb.Video) (*pb.Video, error) {
 	return vs.Videos[0], nil
 }
 
-func selectVideos(db *sql.DB, videos *pb.Videos, rows *sql.Rows) error {
+func mkVideos(db *sql.DB, videos *pb.Videos, rows *sql.Rows) error {
 	var id, title, description, duration, cid, cname sql.NullString
 	var last_updated sql.NullInt64
 	for rows.Next() {

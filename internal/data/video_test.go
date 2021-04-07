@@ -76,10 +76,13 @@ func TestGetVideosFromTo(t *testing.T) {
 
 func TestSearchVideos(t *testing.T) {
 	fr := NewFetcherRepo()
-	vs := &pb.Videos{Keywords: []string{"English"}}
+	vs := &pb.Videos{Keywords: []string{"english"}}
 	vs, err := fr.SearchVideos(vs)
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(len(vs.Videos))
+	// fmt.Println(len(vs.Videos))
+	for _, v := range vs.Videos {
+		fmt.Println(v.Title)
+	}
 }

@@ -168,3 +168,22 @@ func TestGetNextSearch(t *testing.T) {
 		time.Sleep(5 * time.Second)
 	}
 }
+
+func TestNextSearch(t *testing.T) {
+	db, err := NewDBCase()
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+
+	for {
+		vs, err := NextSearch(db, "english")
+		if err != nil {
+			t.Error(err)
+		}
+		for _, v := range vs.Videos {
+			fmt.Println(v.Title)
+		}
+		time.Sleep(5 * time.Second)
+	}
+}
