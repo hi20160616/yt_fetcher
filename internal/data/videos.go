@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	pb "github.com/hi20160616/yt_fetcher/api/yt_fetcher/api"
@@ -157,19 +156,19 @@ func (fr *fetcherRepo) GetVideosFromTo(vs *pb.Videos) (*pb.Videos, error) {
 	}
 	defer dc.Close()
 
-	timeStamp := func(minutes int) string {
-		t := time.Now().Add(time.Duration(minutes) * time.Minute).UnixNano()
-		return strconv.FormatInt(t, 10)[:16]
+	timeStamp := func(minutes int) int64 {
+		t := time.Now().Add(time.Duration(minutes)*time.Minute).UnixNano() / 1000
+		return t
 	}
 
-	if vs.After == "" {
+	if vs.After == 0 {
 		vs.After = timeStamp(-1 * 24 * 60) // 1 days ago
 	}
-	if vs.Before == "" {
+	if vs.Before == 0 {
 		vs.Before = timeStamp(0)
 	}
 
-	return db.SelectVideosFromTo(dc, vs)
+	return db.QueryVideos(dc, vs)
 }
 
 // SearchVideos select all videos match the keywords,

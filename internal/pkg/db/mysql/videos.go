@@ -20,6 +20,7 @@ type Page struct {
 
 var P *Page = &Page{limit: 30}
 
+// queryNextSearch search for infinite search
 func queryNextSearch(db *sql.DB, page *Page) (*Page, error) {
 	rows, err := db.Query(page.query, page.args...)
 	if err != nil {
@@ -41,6 +42,7 @@ func queryNextSearch(db *sql.DB, page *Page) (*Page, error) {
 	return page, nil
 }
 
+// getNextSearch search for infinite search
 func getNextSearch(db *sql.DB, page *Page) (*Page, error) {
 	// first loop
 	if page.offset == 0 {
@@ -74,7 +76,7 @@ func getNextSearch(db *sql.DB, page *Page) (*Page, error) {
 	return queryNextSearch(db, page)
 }
 
-// Search just search keywords is contained in title or description
+// NextSearch just for infinite search
 func NextSearch(db *sql.DB, keywords ...string) (*pb.Videos, error) {
 	P.keywords = append(P.keywords, keywords...)
 	ps, err := getNextSearch(db, P)
@@ -84,81 +86,70 @@ func NextSearch(db *sql.DB, keywords ...string) (*pb.Videos, error) {
 	return ps.videos, nil
 }
 
-func SearchVideos(db *sql.DB, vs *pb.Videos, keywords ...string) (*pb.Videos, error) {
-	// query prapare
-	query := `SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname,
-		v.last_updated FROM videos AS v LEFT JOIN channels AS c ON v.cid = c.id`
-	if len(keywords) != 0 {
-		query += " WHERE "
-	}
+// QueryVideos combine query by keywords and last_updated
+// if vs have `after` and `before` set, query rows from `after` to `before`
+// by default, `before` is now().UnixNano()/1000
+// if `before` is set, it can query rows paginated to 30 rows
+// if `before` and `limit` are set, it can query rows paginated by number of `limit` defined.
+// if keywords are non-nil, query rows that title or description like the keywords.
+func QueryVideos(db *sql.DB, vs *pb.Videos) (*pb.Videos, error) {
 	args := []interface{}{}
-	for i, v := range keywords {
-		if i != 0 {
-			query += " OR "
+	// query prapare
+	q := `SELECT x.id, x.title, x.description, x.duration, x.cid, x.cname, x.last_updated 
+			FROM (SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated 
+				FROM videos AS v LEFT JOIN channels AS c ON v.cid=c.id) AS x WHERE `
+	if len(vs.Keywords) != 0 {
+		q += " ( "
+		for i, v := range vs.Keywords {
+			if i != 0 {
+				q += " OR "
+			}
+			q += " x.title LIKE ? OR x.description LIKE ? "
+			args = append(args, "%"+v+"%", "%"+v+"%")
 		}
-		query += " v.title LIKE ? OR v.description LIKE ?"
-		args = append(args, "%"+v+"%", "%"+v+"%")
+		q += " ) AND "
 	}
-	query += " ORDER BY v.last_updated DESC, v.duration DESC "
+	q += " (x.last_updated>? AND x.last_updated<?) ORDER BY x.last_updated DESC, v.duration DESC LIMIT ? "
+	// set default conditions
+	if vs.Limit == -1 { // no rows limit
+		q = q[:len(q)-7]
+		args = append(args, vs.After, vs.Before)
+	}
+	if vs.Limit == 0 {
+		vs.Limit = 30
+	}
+	if vs.Before == 0 {
+		vs.Before = time.Now().UnixNano() / 1000
+	}
 
 	// query
-	rows, err := db.Query(query, args...)
-	if err != nil {
-		return nil, errors.WithMessage(err, "Search error")
-	}
-	defer rows.Close()
-
-	// populate
-	if err = mkVideos(db, vs, rows); err != nil {
-		return nil, err
-	}
-	return vs, nil
+	args = append(args, vs.After, vs.Before, vs.Limit)
+	return query(db, vs, q, args)
 }
 
-// SelectVideosFromTo select videos from time a to time b left join channels where rank != -1
-func SelectVideosFromTo(db *sql.DB, vs *pb.Videos) (*pb.Videos, error) {
-	q := "SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid = c.id WHERE v.last_updated>? AND v.last_updated<? AND c.rank<>-1 ORDER BY v.last_updated DESC, v.duration DESC, cid"
-	rows, err := db.Query(q, vs.After, vs.Before)
+func query(db *sql.DB, vs *pb.Videos, q string, args ...interface{}) (*pb.Videos, error) {
+	rows, err := db.Query(q, args...)
 	if err != nil {
-		return nil, errors.WithMessage(err, "SelectVideosFromTo error")
+		return nil, err
 	}
 	defer rows.Close()
 
 	if err = mkVideos(db, vs, rows); err != nil {
 		return nil, err
 	}
+
+	if len(vs.Videos) == int(vs.Limit) {
+		vs.Before = vs.Videos[int(vs.Limit)-1].LastUpdated
+	}
 	return vs, nil
-}
-
-func SelectVideosByCid(db *sql.DB, channelId string) (*pb.Videos, error) {
-	q := "SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid=c.id WHERE c.id=? AND v.last_updated<? ORDER BY v.last_updated DESC, v.duration DESC LIMIT ?"
-	now := time.Now().UnixNano() / 1000
-	rows, err := db.Query(q, channelId, now, 30)
-	if err != nil {
-		return nil, errors.WithMessage(err, "SelectVideosByCid query error")
-	}
-	defer rows.Close()
-
-	videos := &pb.Videos{}
-	if err = mkVideos(db, videos, rows); err != nil {
-		return nil, err
-	}
-	return videos, nil
 }
 
 // SelectVideoById select video from videos by video id
 func SelectVideoByVid(db *sql.DB, v *pb.Video) (*pb.Video, error) {
 	q := "SELECT v.id, v.title, v.description, v.duration, v.cid, c.name AS cname, v.last_updated FROM videos AS v LEFT JOIN channels AS c on v.cid=c.id WHERE v.id=?"
-	rows, err := db.Query(q, v.Id)
+	vs, err := query(db, &pb.Videos{}, q, v.Id)
 	if err != nil {
 		return nil, err
-	}
-	vs := &pb.Videos{}
-	if err = mkVideos(db, vs, rows); err != nil {
-		return nil, err
-	}
-	if len(vs.Videos) == 0 {
-		return nil, errors.New("SelectVideoByVid got nil from id: " + v.Id)
 	}
 	return vs.Videos[0], nil
 }
@@ -264,9 +255,6 @@ func InsertVideo(db *sql.DB, v *pb.Video) error {
 		v.Id, v.Title, v.Description, v.Duration, v.Cid, v.LastUpdated,
 		v.Id, v.Title, v.Description, v.Duration, v.Cid, v.LastUpdated)
 	if err != nil {
-		// if strings.Contains(err.Error(), "Duplicate entry") {
-		//         return UpdateVideo(db, v)
-		// }
 		return errors.WithMessage(err, "InsertVideo Exec error")
 	}
 	return nil

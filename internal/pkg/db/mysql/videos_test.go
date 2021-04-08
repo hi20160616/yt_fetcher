@@ -3,7 +3,6 @@ package mysql
 import (
 	"fmt"
 	"reflect"
-	"strconv"
 	"testing"
 	"time"
 
@@ -17,16 +16,20 @@ func TestSearchVideos(t *testing.T) {
 	}
 	defer db.Close()
 
-	vs, err := SearchVideos(db, &pb.Videos{}, "Delhi")
+	// vs, err := SearchVideos(db, &pb.Videos{Keywords: []string{"english"}, Limit: 30, Before: 1617018775070789})
+	vs, err := QueryVideos(db, &pb.Videos{Keywords: []string{"english"}, Limit: 30, Before: 1617011386456731})
 	if err != nil {
 		t.Error(err)
 	}
 
 	fmt.Println(len(vs.Videos))
-	fmt.Println(vs.Videos[5].Thumbnails)
+	for _, v := range vs.Videos {
+		fmt.Printf("%d\t", v.LastUpdated)
+		fmt.Println(v.Title)
+	}
 }
 
-func TestSelectVideosFromTo(t *testing.T) {
+func TestQueryVideosFromTo(t *testing.T) {
 	db, err := NewDBCase()
 	if err != nil {
 		t.Error(err)
@@ -34,9 +37,9 @@ func TestSelectVideosFromTo(t *testing.T) {
 	defer db.Close()
 
 	now := time.Now()
-	after := strconv.FormatInt(now.AddDate(0, 0, -7).UnixNano(), 10)[:16]
-	before := strconv.FormatInt(now.UnixNano(), 10)[:16]
-	vs, err := SelectVideosFromTo(db, &pb.Videos{After: after, Before: before})
+	after := now.AddDate(0, 0, -7).UnixNano() / 1000
+	before := now.UnixNano() / 1000
+	vs, err := QueryVideos(db, &pb.Videos{After: after, Before: before})
 	if err != nil {
 		t.Error(err)
 	}
@@ -51,27 +54,6 @@ func TestSelectVideosFromTo(t *testing.T) {
 		t.Errorf("want: true, got false")
 	}
 
-}
-
-func TestSelectVideosByCid(t *testing.T) {
-	db, err := NewDBCase()
-	if err != nil {
-		t.Error(err)
-	}
-	defer db.Close()
-
-	cid := "UCYPvAwZP8pZhSMW8qs7cVCw"
-	vs, err := SelectVideosByCid(db, cid)
-	if err != nil {
-		t.Error(err)
-	}
-	flag := false
-	for _, v := range vs.Videos {
-		fmt.Println(v)
-	}
-	if !flag {
-		t.Errorf("want: true, got false")
-	}
 }
 
 func TestSelectVideo(t *testing.T) {

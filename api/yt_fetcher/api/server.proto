@@ -61,8 +61,9 @@ message Thumbnail{
 }
 
 message Videos{
-    string after = 1;
-    string before = 2;
-    repeated Video videos = 3;
-    repeated string keywords = 8;
+    int64 after = 1;
+    int64 before = 2;
+    int32 limit = 3;
+    repeated Video videos = 4;
+    repeated string keywords = 5;
 }
