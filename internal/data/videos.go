@@ -178,7 +178,8 @@ func (fr *fetcherRepo) SearchVideos(vs *pb.Videos) (*pb.Videos, error) {
 	if err != nil {
 		return nil, err
 	}
-	return db.NextSearch(dc, vs.Keywords...)
+	// return db.NextSearch(dc, vs.Keywords...)
+	return db.QueryVideos(dc, vs)
 }
 
 func (fr *fetcherRepo) DelNilVideos() error {
